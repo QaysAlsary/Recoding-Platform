@@ -15,6 +15,8 @@ ThemeData get appTheme => ThemeData(
         selectionColor: AppColors.primary,
         selectionHandleColor: AppColors.primary,
       ),
+
+
     );
 
 TextTheme get textTheme => TextTheme(
@@ -60,4 +62,15 @@ TextTheme get textTheme => TextTheme(
         fontStyle: FontStyle.normal,
         color: Color(0xff9E4D20),
       ),
+
+  labelMedium: TextStyle(
+    fontFamily: 'Oswald',
+    fontSize: 20.sp,
+    fontWeight: FontWeight.w300,
+    fontStyle: FontStyle.normal,
+
+    color: Color.fromRGBO(0, 0, 0, 0.53),
+  ),
+
+
     );
