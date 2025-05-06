@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../themes/app_colors.dart';
-import 'svg_icon_widget.dart';
+
 //Example for using it in a screen:
 //               InputTextFormField(
 //                 controller: TextEditingController(),
@@ -19,8 +19,8 @@ class InputTextFormField extends StatelessWidget {
   final EdgeInsetsGeometry? padding; // Padding inside the field
   final bool obscureText;
   final String? hintText; // Hint text
-  final String? prefixIcon; // Prefix icon
-  final String? suffixIcon; // Suffix icon
+  final Widget? prefixIcon; // Prefix icon
+  final Widget? suffixIcon; // Suffix icon
   final Widget? icon; // Custom leading icon
   final Widget? helper;
   final TextStyle? errorStyle;
@@ -28,6 +28,8 @@ class InputTextFormField extends StatelessWidget {
   final String? Function(String?)? validator;
   final TextInputType? keyboardType;
   final Function(String)? onChanged;
+  final IconData? prefixIconIcon;
+  final IconData? suffixIconIcon;
 
   InputTextFormField({
     super.key,
@@ -48,6 +50,8 @@ class InputTextFormField extends StatelessWidget {
     this.counter,
     this.helper,
     this.onChanged,
+    this.prefixIconIcon,
+    this.suffixIconIcon,
   });
 
   @override
@@ -68,30 +72,30 @@ class InputTextFormField extends StatelessWidget {
         decoration: InputDecoration(
           hintText: hintText,
           hintStyle: Theme.of(context).textTheme.labelMedium,
-          contentPadding: const EdgeInsets.symmetric(vertical: 12),
-
-          prefixIcon: prefixIcon != null
-              ? Padding(
-            padding: const EdgeInsets.only(left: 5, right: 11).w,
-            child: SvgIcon(
-              w: 43.w,
-              h: 43.h,
-              iconTitle: prefixIcon!,
-            ),
+          contentPadding:
+              EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
+          prefixIcon: Icon(
+            prefixIconIcon,
+            size: 30,
+            color: Colors.black.withOpacity(0.45),
           )
-              : null,
 
-          suffixIcon: suffixIcon != null
-              ? Padding(
-            padding: const EdgeInsets.only(left: 11, right: 5).w,
-            child: SvgIcon(
-              w: 32.w,
-              h: 32.h,
-              iconTitle: suffixIcon!,
-            ),
-          )
-              : null,
-
+          // ?? Padding(
+          //   padding: const EdgeInsets.only(left: 5, right: 11).w,
+          //   child: SvgIcon(
+          //     w: 43.w,
+          //     h: 43.h,
+          //     iconTitle: prefixIcon!,
+          //   ),
+          // ) ??
+          // null
+          ,
+          suffixIcon: suffixIcon ??
+              Icon(
+                suffixIconIcon,
+                size: 30,
+                color: Colors.black.withOpacity(0.45),
+              ),
           border: const UnderlineInputBorder(
             borderSide: BorderSide(
               width: 3.73,
