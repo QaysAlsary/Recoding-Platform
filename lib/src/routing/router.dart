@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:recoding_platform_project/src/routing/custom_navigation_observer.dart';
 import 'package:recoding_platform_project/src/routing/routes.dart';
-
 import 'fallback_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
