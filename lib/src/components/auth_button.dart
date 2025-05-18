@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../themes/app_colors.dart';
+
 //Example for using it in a screen:
 //            AuthButton(
 //                 text: 'Login',
@@ -54,7 +55,7 @@ class AuthButton extends StatelessWidget {
               textStyle: Theme.of(context)
                   .textTheme
                   .labelMedium
-                  ?.copyWith(fontSize: 18.sp),
+                  ?.copyWith(fontSize: 18.sp, fontWeight: FontWeight.w400),
             ),
         child: Text(
           text,
