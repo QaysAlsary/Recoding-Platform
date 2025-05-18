@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../src/components/input_text_form_field.dart';
-import '../../../../src/themes/app_icons.dart';
 
 class EditProfileColumn extends StatelessWidget {
   const EditProfileColumn({super.key});
