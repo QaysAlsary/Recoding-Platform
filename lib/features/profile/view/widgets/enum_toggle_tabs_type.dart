@@ -1,0 +1,1 @@
+enum ToggleTabType { editProfile, security }

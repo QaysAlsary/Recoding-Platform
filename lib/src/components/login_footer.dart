@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:recoding_platform_project/src/constants/image_paths.dart';
+import 'package:recoding_platform_project/src/themes/app_images.dart';
 
 class LoginFooter extends StatelessWidget {
   const LoginFooter({super.key});
