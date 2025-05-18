@@ -16,9 +16,7 @@ class ProfileViewBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocListener<ProfileBloc, ProfileState>(
-      listener: (context, state) {
-        // استعملها إذا بدك تعمل أكشنات جانبية بدون منطق في الواجهة
-      },
+      listener: (context, state) {},
       child: BlocBuilder<ProfileBloc, ProfileState>(
         builder: (context, state) {
           return SafeArea(
