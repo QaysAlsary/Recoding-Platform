@@ -23,7 +23,7 @@ class EditProfileColumn extends StatelessWidget {
           ),
           InputTextFormField(
             prefixIcon: Icon(
-              size: 25,
+              size: 25.sp,
               Icons.person,
               color: Color(0xff9a9a9a),
             ),
@@ -31,7 +31,7 @@ class EditProfileColumn extends StatelessWidget {
           ),
           InputTextFormField(
             prefixIcon: Icon(
-              size: 25,
+              size: 25.sp,
               Icons.email_outlined,
               color: Color(0xff9a9a9a),
             ),
@@ -39,19 +39,19 @@ class EditProfileColumn extends StatelessWidget {
           ),
           InputTextFormField(
             prefixIcon: Icon(
-              size: 25,
+              size: 25.sp,
               Icons.key,
               color: Color(0xff9a9a9a),
             ),
             hintText: "Password",
             suffixIcon: Icon(
-              size: 25,
+              size: 20.sp,
               Icons.visibility,
               color: Color(0xff9a9a9a),
             ),
           ),
           SizedBox(
-            height: 5,
+            height: 5.h,
           ),
           Text(
             "Your password is required in order to change your email.",

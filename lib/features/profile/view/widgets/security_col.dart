@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../src/components/input_text_form_field.dart';
-import '../../../../src/themes/app_icons.dart';
 
 class SecurityColumn extends StatelessWidget {
   const SecurityColumn({super.key});
@@ -24,12 +23,12 @@ class SecurityColumn extends StatelessWidget {
           ),
           InputTextFormField(
             prefixIcon: Icon(
-              size: 25,
+              size: 25.sp,
               Icons.key_outlined,
               color: Color(0xff9a9a9a),
             ),
             suffixIcon: Icon(
-              size: 25,
+              size: 20.sp,
               Icons.visibility,
               color: Color(0xff9a9a9a),
             ),
@@ -37,7 +36,7 @@ class SecurityColumn extends StatelessWidget {
           ),
           InputTextFormField(
             prefixIcon: Icon(
-              size: 25,
+              size: 25.sp,
               Icons.key_outlined,
               color: Color(0xff9a9a9a),
             ),
@@ -45,7 +44,7 @@ class SecurityColumn extends StatelessWidget {
           ),
           InputTextFormField(
             prefixIcon: Icon(
-              size: 25,
+              size: 25.sp,
               Icons.key_outlined,
               color: Color(0xff9a9a9a),
             ),
