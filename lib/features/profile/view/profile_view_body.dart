@@ -5,8 +5,6 @@ import 'package:recoding_platform_project/features/profile/view/widgets/edit_pro
 import 'package:recoding_platform_project/features/profile/view/widgets/security_col.dart';
 import 'package:recoding_platform_project/features/profile/view/widgets/toggle_taps.dart';
 
-import '../../../src/components/svg_icon_widget.dart';
-import '../../../src/themes/app_icons.dart';
 import '../bloc/profile_bloc.dart';
 import '../../../../src/components/auth_button.dart';
 
@@ -42,7 +40,18 @@ class ProfileViewBody extends StatelessWidget {
                           Positioned(
                             bottom: 0,
                             right: 0,
-                            child: SvgIcon(iconTitle: AppIcons.penInCircle),
+                            child: Container(
+                              width: 23,
+                              height: 23,
+                              child: CircleAvatar(
+                                backgroundColor: Colors.white,
+                                child: Icon(
+                                  size: 18,
+                                  color: Color(0xffadadad),
+                                  Icons.edit_outlined,
+                                ),
+                              ),
+                            ),
                           ),
                         ],
                       ),
