@@ -3,8 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../bloc/profile_bloc.dart';
-import '../../../../src/components/svg_icon_widget.dart';
-import '../../../../src/themes/app_icons.dart';
 import '../../../../src/themes/app_theme.dart';
 import 'enum_toggle_tabs_type.dart';
 
@@ -27,7 +25,8 @@ class ToggleTabs extends StatelessWidget {
               Opacity(
                 opacity: selectedTab == ToggleTabType.editProfile ? 1.0 : 0.5,
                 child: Icon(
-                  size: 25,
+                  size:
+                      selectedTab == ToggleTabType.editProfile ? 25.sp : 22.sp,
                   Icons.edit_outlined,
                 ),
               ),
@@ -57,7 +56,7 @@ class ToggleTabs extends StatelessWidget {
               Opacity(
                   opacity: selectedTab == ToggleTabType.security ? 1.0 : 0.5,
                   child: Icon(
-                    size: 25,
+                    size: selectedTab == ToggleTabType.security ? 25.sp : 22.sp,
                     Icons.lock_outlined,
                   )),
               SizedBox(
