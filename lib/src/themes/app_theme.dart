@@ -68,4 +68,5 @@ TextTheme get textTheme => TextTheme(
         fontStyle: FontStyle.normal,
         color: Color.fromRGBO(0, 0, 0, 0.53),
       ),
+
     );

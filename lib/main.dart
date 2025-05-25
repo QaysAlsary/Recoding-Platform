@@ -2,6 +2,7 @@ import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:maptiler_flutter/maptiler_flutter.dart';
 import 'package:recoding_platform_project/src/di/app_initializer.dart';
 import 'package:recoding_platform_project/src/di/service_locator.dart';
 import 'package:recoding_platform_project/src/routing/router.dart';
@@ -10,7 +11,9 @@ import 'package:recoding_platform_project/src/themes/app_theme.dart';
 import 'features/profile/bloc/profile_bloc.dart';
 
 void main() async {
+
   await AppInitializer.init();
+
   runApp(const MyApp());
 }
 

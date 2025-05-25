@@ -32,6 +32,7 @@ class InputTextFormField extends StatelessWidget {
   final String? Function(String?)? validator;
   final TextInputType? keyboardType;
   final Function(String)? onChanged;
+  final TextStyle? hintStyle;
 
   InputTextFormField({
     super.key,
@@ -52,6 +53,7 @@ class InputTextFormField extends StatelessWidget {
     this.counter,
     this.helper,
     this.onChanged,
+    this.hintStyle
   });
 
   @override
@@ -71,7 +73,7 @@ class InputTextFormField extends StatelessWidget {
         style: Theme.of(context).textTheme.labelMedium,
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: Theme.of(context)
+          hintStyle: hintStyle ?? Theme.of(context)
               .textTheme
               .labelMedium
               ?.copyWith(fontSize: 16.sp, fontWeight: FontWeight.w400),

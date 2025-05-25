@@ -7,7 +7,7 @@ class Header extends StatelessWidget {
   const Header({super.key, this.headerText});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context)  {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return SizedBox(
