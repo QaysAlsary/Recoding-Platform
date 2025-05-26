@@ -11,6 +11,7 @@ import 'features/profile/bloc/profile_bloc.dart';
 
 void main() async {
   await AppInitializer.init();
+
   runApp(const MyApp());
 }
 
