@@ -17,6 +17,7 @@ class AuthButton extends StatelessWidget {
   final EdgeInsets? padding;
   final EdgeInsets? margin;
   final String text;
+  final TextStyle? textStyle;
 
   const AuthButton({
     required this.onPressed,
@@ -28,6 +29,7 @@ class AuthButton extends StatelessWidget {
     this.boxDecoration,
     this.padding,
     this.margin,
+    this.textStyle,
     super.key,
   });
 
@@ -52,7 +54,7 @@ class AuthButton extends StatelessWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(25),
               ),
-              textStyle: Theme.of(context)
+              textStyle: textStyle ?? Theme.of(context)
                   .textTheme
                   .labelMedium
                   ?.copyWith(fontSize: 18.sp, fontWeight: FontWeight.w400),

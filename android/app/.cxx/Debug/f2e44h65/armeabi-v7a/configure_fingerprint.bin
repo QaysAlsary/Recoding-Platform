@@ -2,6 +2,7 @@ C/C++ Structured LogK
 I
 GC:\flutter\packages\flutter_tools\gradle\src\main\groovy\CMakeLists.txtC
 A
+<<<<<<< HEAD
 ?com.android.build.gradle.internal.cxx.io.EncodedFileFingerPrint	–˜íï2§ ÔéìÐÐ2m
 k
 iD:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\armeabi-v7a\additional_project_files.txt	–˜íï2 „ÍÇðí2j
@@ -26,3 +27,29 @@ a
 _D:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\armeabi-v7a\prefab_config.json	–˜íï2( ÍÇðí2h
 f
 dD:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\armeabi-v7a\symbol_folder_index.txt	–˜íï2[ ÍÇðí2
+=======
+?com.android.build.gradle.internal.cxx.io.EncodedFileFingerPrint	¢˜§î2§ ÔéìÐÐ2m
+k
+iD:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\armeabi-v7a\additional_project_files.txt	¢˜§î2 „ÍÇðí2j
+h
+fD:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\armeabi-v7a\android_gradle_build.json	¢˜§î2´ ‰ÍÇðí2o
+m
+kD:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\armeabi-v7a\android_gradle_build_mini.json	¢˜§î2‹ ÍÇðí2\
+Z
+XD:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\armeabi-v7a\build.ninja	¢˜§î2¬× ÑÌÇðí2`
+^
+\D:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\armeabi-v7a\build.ninja.txt	¢˜§î2e
+c
+aD:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\armeabi-v7a\build_file_index.txt	¢˜§î2G ‘ÍÇðí2f
+d
+bD:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\armeabi-v7a\compile_commands.json	¢˜§î2	j
+h
+fD:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\armeabi-v7a\compile_commands.json.bin	¢˜§î2
+p
+n
+lD:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\armeabi-v7a\metadata_generation_command.txt	¢˜§î2Ñ ŽÍÇðí2c
+a
+_D:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\armeabi-v7a\prefab_config.json	¢˜§î2( ÍÇðí2h
+f
+dD:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\armeabi-v7a\symbol_folder_index.txt	¢˜§î2[ ÍÇðí2
+>>>>>>> origin/weam

@@ -32,27 +32,28 @@ class InputTextFormField extends StatelessWidget {
   final String? Function(String?)? validator;
   final TextInputType? keyboardType;
   final Function(String)? onChanged;
+  final TextStyle? hintStyle;
 
-  InputTextFormField({
-    super.key,
-    this.controller,
-    this.decoration,
-    this.width,
-    this.height,
-    this.margin,
-    this.padding,
-    this.hintText,
-    this.prefixIcon,
-    this.suffixIcon,
-    this.icon,
-    this.errorStyle,
-    this.validator,
-    this.keyboardType,
-    this.obscureText = false,
-    this.counter,
-    this.helper,
-    this.onChanged,
-  });
+  InputTextFormField(
+      {super.key,
+      this.controller,
+      this.decoration,
+      this.width,
+      this.height,
+      this.margin,
+      this.padding,
+      this.hintText,
+      this.prefixIcon,
+      this.suffixIcon,
+      this.icon,
+      this.errorStyle,
+      this.validator,
+      this.keyboardType,
+      this.obscureText = false,
+      this.counter,
+      this.helper,
+      this.onChanged,
+      this.hintStyle});
 
   @override
   Widget build(BuildContext context) {
