@@ -111,14 +111,14 @@ class SelectMarkerView extends StatelessWidget {
                   suffixIcon: Icons.edit_outlined,
                 ),
                 SizedBox(
-                  height: 150.h,
+                  height: 80.h,
                 ),
                 RoundedRectangleButton(
                   onPressed: () {},
                   text: "Create New Marker",
                 ),
                 SizedBox(
-                  height: 20,
+                  height: 20.h,
                 ),
               ],
             ),

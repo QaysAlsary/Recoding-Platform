@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:recoding_platform_project/features/home/view/widgets/search_bar_widget.dart';
 
 import '../bloc/home_bloc.dart';
 import 'widgets/top_bar_widget.dart';
