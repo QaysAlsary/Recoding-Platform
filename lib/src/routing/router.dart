@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:recoding_platform_project/features/login/bloc/login_bloc.dart';
 import 'package:recoding_platform_project/features/login/data/repo/login_repo.dart';
 import 'package:recoding_platform_project/features/login/ui/login_screen.dart';
+import 'package:recoding_platform_project/features/register/bloc/bloc/register_bloc.dart';
+import 'package:recoding_platform_project/features/register/ui/screens/register_screen.dart';
 import 'package:recoding_platform_project/src/di/service_locator.dart';
 import 'package:recoding_platform_project/src/routing/custom_navigation_observer.dart';
 import 'package:recoding_platform_project/src/routing/routes.dart';
@@ -27,6 +29,14 @@ final goRouter = GoRouter(
       builder: (context, state) => BlocProvider(
         create: (_) => getIt<LoginBloc>(),
         child: LoginScreen(),
+      ),
+    ),
+
+    GoRoute(
+      path: Routes.register,
+      builder: (context, state) => BlocProvider(
+        create: (_) => getIt<RegisterBloc>(),
+        child: RegisterScreen(),
       ),
     ),
 
