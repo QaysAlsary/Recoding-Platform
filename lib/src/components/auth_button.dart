@@ -54,13 +54,14 @@ class AuthButton extends StatelessWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(25),
               ),
-              textStyle: textStyle ?? Theme.of(context)
-                  .textTheme
-                  .labelMedium
-                  ?.copyWith(fontSize: 18.sp, fontWeight: FontWeight.w400),
             ),
         child: Text(
           text,
+          style: textStyle ??
+              Theme.of(context)
+                  .textTheme
+                  .labelMedium
+                  ?.copyWith(fontSize: 18.sp, fontWeight: FontWeight.w400),
           textAlign: TextAlign.center,
         ),
       ),
