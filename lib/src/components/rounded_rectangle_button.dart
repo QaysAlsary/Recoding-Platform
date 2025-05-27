@@ -37,7 +37,7 @@ class RoundedRectangleButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      height: buttonHeight ?? 65.h,
+      height: buttonHeight ?? 57.h,
       margin: margin,
       padding: padding,
       decoration: boxDecoration,
@@ -56,7 +56,7 @@ class RoundedRectangleButton extends StatelessWidget {
               ),
               textStyle: textStyle ??
                   Theme.of(context).textTheme.labelMedium?.copyWith(
-                      fontSize: 18.sp,
+                      fontSize: 20.sp,
                       fontWeight: FontWeight.w400,
                       color: Colors.blue),
             ),
