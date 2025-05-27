@@ -1,6 +1,7 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:maptiler_flutter/maptiler_flutter.dart';
 import 'package:recoding_platform_project/src/di/app_initializer.dart';
@@ -11,12 +12,12 @@ import 'package:recoding_platform_project/src/themes/app_theme.dart';
 import 'features/profile/bloc/profile_bloc.dart';
 
 void main() async {
-
   await AppInitializer.init();
-  MapTilerConfig.setApiKey('tBWczgtWITcq8rfJeIuA');
+  await dotenv.load(fileName: ".env");
+
+  MapTilerConfig.setApiKey(dotenv.env['MAP_TILLER_API'] ?? '');
 
   runApp(const MyApp());
-
 }
 
 class MyApp extends StatelessWidget {
