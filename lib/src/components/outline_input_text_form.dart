@@ -75,9 +75,9 @@ class OutlineInputTextForm extends StatelessWidget {
               Theme.of(context)
                   .textTheme
                   .labelMedium
-                  ?.copyWith(fontSize: 16.sp, fontWeight: FontWeight.w400),
+                  ?.copyWith(fontSize: 20.sp, fontWeight: FontWeight.w400),
           contentPadding:
-              const EdgeInsets.symmetric(vertical: 15, horizontal: 18).w,
+              const EdgeInsets.symmetric(vertical: 20, horizontal: 18).w,
           prefixIcon: prefixIcon != null
               ? Padding(
                   padding: const EdgeInsets.only(left: 5, right: 15).w,
@@ -97,6 +97,7 @@ class OutlineInputTextForm extends StatelessWidget {
                   padding: const EdgeInsets.only(left: 11, right: 15).w,
                   child: Icon(
                     suffixIcon,
+                    size: 25,
                     color: Color(0xff999999),
                   ),
                   // SvgIcon(
@@ -107,21 +108,21 @@ class OutlineInputTextForm extends StatelessWidget {
                 )
               : null,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(20.r),
+            borderRadius: BorderRadius.circular(10.r),
             borderSide: const BorderSide(
               color: Color(0xff999999),
               width: 1.5,
             ),
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(20.r),
+            borderRadius: BorderRadius.circular(10.r),
             borderSide: const BorderSide(
               color: Color(0xff999999),
               width: 1.5,
             ),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(20.r),
+            borderRadius: BorderRadius.circular(10.r),
             borderSide: const BorderSide(
               color: Color(0xff999999),
               width: 1.5,
