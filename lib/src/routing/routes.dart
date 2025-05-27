@@ -5,4 +5,5 @@ abstract class Routes {
   static const String home = '/home';
   static const String createMarker = '/create-marker';
   static const String selectMarker = '/select-marker';
+  static const String editMarker = '/edit-marker';
 }
