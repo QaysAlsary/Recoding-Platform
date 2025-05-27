@@ -12,4 +12,6 @@ abstract class AppIcons {
   static String penInCircle = 'ic_penIn_circle.svg'.iconAssetPath;
   static String arrow_back = 'ic_arrow_back.svg'.iconAssetPath;
   static String name = 'ic_name.svg'.iconAssetPath;
+  static String sub_aspect = 'ic_sub_aspect.svg'.iconAssetPath;
+  static String aspect = 'ic_aspect.svg'.iconAssetPath;
 }
