@@ -34,26 +34,27 @@ class InputTextFormField extends StatelessWidget {
   final Function(String)? onChanged;
   final TextStyle? hintStyle;
 
-  InputTextFormField(
-      {super.key,
-      this.controller,
-      this.decoration,
-      this.width,
-      this.height,
-      this.margin,
-      this.padding,
-      this.hintText,
-      this.prefixIcon,
-      this.suffixIcon,
-      this.icon,
-      this.errorStyle,
-      this.validator,
-      this.keyboardType,
-      this.obscureText = false,
-      this.counter,
-      this.helper,
-      this.onChanged,
-      this.hintStyle});
+  InputTextFormField({
+    super.key,
+    this.controller,
+    this.decoration,
+    this.width,
+    this.height,
+    this.margin,
+    this.padding,
+    this.hintText,
+    this.prefixIcon,
+    this.suffixIcon,
+    this.icon,
+    this.errorStyle,
+    this.validator,
+    this.keyboardType,
+    this.obscureText = false,
+    this.counter,
+    this.helper,
+    this.onChanged,
+    this.hintStyle
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +73,7 @@ class InputTextFormField extends StatelessWidget {
         style: Theme.of(context).textTheme.labelMedium,
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: Theme.of(context)
+          hintStyle: hintStyle ?? Theme.of(context)
               .textTheme
               .labelMedium
               ?.copyWith(fontSize: 16.sp, fontWeight: FontWeight.w400),

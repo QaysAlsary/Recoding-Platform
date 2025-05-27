@@ -2,6 +2,7 @@ C/C++ Structured LogX
 V
 TC:\Users\LEGION\flutter\packages\flutter_tools\gradle\src\main\groovy\CMakeLists.txtC
 A
+<<<<<<< HEAD
 ?com.android.build.gradle.internal.cxx.io.EncodedFileFingerPrint	‘çÏ£ð2§ õ ÜÚÏ2m
 k
 iD:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\x86_64\additional_project_files.txt	‘çÏ£ð2 ±Ã…âç2j
@@ -26,3 +27,29 @@ a
 _D:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\x86_64\prefab_config.json	‘çÏ£ð2( »Ã…âç2h
 f
 dD:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\x86_64\symbol_folder_index.txt	‘çÏ£ð2[ ¼Ã…âç2
+=======
+?com.android.build.gradle.internal.cxx.io.EncodedFileFingerPrint	ø†Ôñ2§ õ ÜÚÏ2m
+k
+iD:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\x86_64\additional_project_files.txt	ø†Ôñ2 ¸”Êð2j
+h
+fD:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\x86_64\android_gradle_build.json	ù†Ôñ2Á »”Êð2o
+m
+kD:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\x86_64\android_gradle_build_mini.json	ù†Ôñ2š ¿”Êð2\
+Z
+XD:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\x86_64\build.ninja	ù†Ôñ2‡Ö ˆ”Êð2`
+^
+\D:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\x86_64\build.ninja.txt	ù†Ôñ2e
+c
+aD:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\x86_64\build_file_index.txt	ù†Ôñ2T Â”Êð2f
+d
+bD:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\x86_64\compile_commands.json	ù†Ôñ2	j
+h
+fD:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\x86_64\compile_commands.json.bin	ù†Ôñ2
+p
+n
+lD:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\x86_64\metadata_generation_command.txt	ù†Ôñ2Ð À”Êð2c
+a
+_D:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\x86_64\prefab_config.json	ù†Ôñ2( Á”Êð2h
+f
+dD:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\x86_64\symbol_folder_index.txt	ù†Ôñ2[ Â”Êð2
+>>>>>>> origin/weam

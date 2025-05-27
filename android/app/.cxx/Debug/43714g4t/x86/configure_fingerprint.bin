@@ -2,6 +2,7 @@ C/C++ Structured LogX
 V
 TC:\Users\LEGION\flutter\packages\flutter_tools\gradle\src\main\groovy\CMakeLists.txtC
 A
+<<<<<<< HEAD
 ?com.android.build.gradle.internal.cxx.io.EncodedFileFingerPrint	õæÏ£ð2§ õ ÜÚÏ2j
 h
 fD:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\x86\additional_project_files.txt	õæÏ£ð2 š³…âç2g
@@ -26,3 +27,29 @@ iD:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\x86\metad
 \D:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\x86\prefab_config.json	õæÏ£ð2( §³…âç2e
 c
 aD:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\x86\symbol_folder_index.txt	öæÏ£ð2X ¨³…âç2
+=======
+?com.android.build.gradle.internal.cxx.io.EncodedFileFingerPrint	Ü†Ôñ2§ õ ÜÚÏ2j
+h
+fD:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\x86\additional_project_files.txt	Ü†Ôñ2 Ì†Êð2g
+e
+cD:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\x86\android_gradle_build.json	Ü†Ôñ2» Ï†Êð2l
+j
+hD:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\x86\android_gradle_build_mini.json	Ü†Ôñ2” Ó†Êð2Y
+W
+UD:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\x86\build.ninja	Ü†Ôñ2øÕ ™†Êð2]
+[
+YD:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\x86\build.ninja.txt	Ü†Ôñ2b
+`
+^D:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\x86\build_file_index.txt	Ü†Ôñ2T Ø†Êð2c
+a
+_D:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\x86\compile_commands.json	Ü†Ôñ2	g
+e
+cD:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\x86\compile_commands.json.bin	Ü†Ôñ2
+m
+k
+iD:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\x86\metadata_generation_command.txt	Ü†Ôñ2Á Õ†Êð2`
+^
+\D:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\x86\prefab_config.json	Ü†Ôñ2( Ö†Êð2e
+c
+aD:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\x86\symbol_folder_index.txt	Ü†Ôñ2X Ö†Êð2
+>>>>>>> origin/weam
