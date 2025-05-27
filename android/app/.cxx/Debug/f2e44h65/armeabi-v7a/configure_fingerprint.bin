@@ -3,6 +3,7 @@ I
 GC:\flutter\packages\flutter_tools\gradle\src\main\groovy\CMakeLists.txtC
 A
 <<<<<<< HEAD
+<<<<<<< HEAD
 ?com.android.build.gradle.internal.cxx.io.EncodedFileFingerPrint	–˜íï2§ ÔéìĞĞ2m
 k
 iD:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\armeabi-v7a\additional_project_files.txt	–˜íï2 „ÍÇğí2j
@@ -28,6 +29,8 @@ _D:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\armeabi-v7a\pr
 f
 dD:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\armeabi-v7a\symbol_folder_index.txt	–˜íï2[ ÍÇğí2
 =======
+=======
+>>>>>>> origin/weam
 ?com.android.build.gradle.internal.cxx.io.EncodedFileFingerPrint	¢˜§î2§ ÔéìĞĞ2m
 k
 iD:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\armeabi-v7a\additional_project_files.txt	¢˜§î2 „ÍÇğí2j
@@ -51,5 +54,9 @@ lD:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\armeabi-v7a\me
 a
 _D:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\armeabi-v7a\prefab_config.json	¢˜§î2( ÍÇğí2h
 f
+<<<<<<< HEAD
+dD:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\armeabi-v7a\symbol_folder_index.txt	¢˜§î2[ ÍÇğí2
+>>>>>>> origin/weam
+=======
 dD:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\armeabi-v7a\symbol_folder_index.txt	¢˜§î2[ ÍÇğí2
 >>>>>>> origin/weam

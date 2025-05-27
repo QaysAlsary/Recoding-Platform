@@ -8,6 +8,7 @@ import 'package:recoding_platform_project/features/profile/view/profile_view.dar
 import 'package:recoding_platform_project/src/routing/custom_navigation_observer.dart';
 import 'package:recoding_platform_project/src/routing/routes.dart';
 import '../../features/home/view/home_view.dart';
+import '../../features/home/view/home_view.dart';
 import 'fallback_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();

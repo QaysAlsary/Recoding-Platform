@@ -1,7 +1,5 @@
 part of 'home_bloc.dart';
 
-
-
 sealed class HomeState extends Equatable {
   const HomeState();
 }
@@ -18,11 +16,22 @@ final class MenuState extends HomeState {
   final String? selectedCategory;
   final String? selectedFilterCategory;
   final String? selectedSubAspect;
-  const MenuState({this.openMenuLabel, this.selectedCategory,this.selectedFilterCategory,this.selectedSubAspect});
+  final LatLng? markerPosition; // ✅ Add this line
+
+  const MenuState({
+    this.openMenuLabel,
+    this.selectedCategory,
+    this.selectedFilterCategory,
+    this.selectedSubAspect,
+    this.markerPosition, // ✅ Add this line
+  });
 
   @override
-  List<Object?> get props => [   openMenuLabel,
+  List<Object?> get props => [
+    openMenuLabel,
     selectedCategory,
     selectedFilterCategory,
-    selectedSubAspect,];
+    selectedSubAspect,
+    markerPosition, // ✅ Add this line
+  ];
 }

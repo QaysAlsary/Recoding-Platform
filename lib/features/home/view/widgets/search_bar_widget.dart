@@ -35,7 +35,7 @@ class SearchBarWidget extends StatelessWidget {
               onChanged: onChanged,
               decoration:  InputDecoration(
                 hintText: 'Search',
-                hintStyle: Theme.of(context).textTheme.labelMedium?.copyWith(fontSize: 15.r,letterSpacing: 0.05),
+                hintStyle: Theme.of(context).textTheme.labelMedium?.copyWith(fontSize: 13.sp,letterSpacing: 0.05),
                 border: InputBorder.none,
               ),
             ),

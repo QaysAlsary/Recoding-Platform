@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:maptiler_flutter/maptiler_flutter.dart';
 
 import '../../../../src/themes/app_colors.dart';
 
@@ -26,7 +27,11 @@ class TopBarWidget extends StatelessWidget {
           ),
           Row(
             children:  [
-              IconButton(icon: Icon(Icons.notifications_none, size: 30.r,color: Colors.grey,),onPressed: (){},  ),
+              IconButton(icon: Icon(Icons.notifications_none, size: 30.r,color: Colors.grey,),onPressed: () async{
+                MapTiler.geolocationAPI.getIPGeolocation().then((result) {
+                  print(result.city);
+                });
+              },  ),
 
               IconButton(icon: Icon(Icons.settings, size: 30.r, color: Colors.grey,),  onPressed: (){}, ),
             ],

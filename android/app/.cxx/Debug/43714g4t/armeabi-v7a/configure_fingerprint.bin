@@ -2,6 +2,7 @@ C/C++ Structured LogX
 V
 TC:\Users\LEGION\flutter\packages\flutter_tools\gradle\src\main\groovy\CMakeLists.txtC
 A
+<<<<<<< HEAD
 ?com.android.build.gradle.internal.cxx.io.EncodedFileFingerPrint	ØæÏ£ð2§ õ ÜÚÏ2r
 p
 nD:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\armeabi-v7a\additional_project_files.txt	ØæÏ£ð2 Æ¢…âç2o
@@ -26,3 +27,29 @@ f
 dD:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\armeabi-v7a\prefab_config.json	ÙæÏ£ð2( Ü¢…âç2m
 k
 iD:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\armeabi-v7a\symbol_folder_index.txt	ÙæÏ£ð2` ß¢…âç2
+=======
+?com.android.build.gradle.internal.cxx.io.EncodedFileFingerPrint	½†Ôñ2§ õ ÜÚÏ2r
+p
+nD:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\armeabi-v7a\additional_project_files.txt	¾†Ôñ2 ¼÷Êð2o
+m
+kD:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\armeabi-v7a\android_gradle_build.json	¾†Ôñ2Ë À÷Êð2t
+r
+pD:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\armeabi-v7a\android_gradle_build_mini.json	¾†Ôñ2¤ Ã÷Êð2a
+_
+]D:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\armeabi-v7a\build.ninja	¾†Ôñ2 Ö ‚÷Êð2e
+c
+aD:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\armeabi-v7a\build.ninja.txt	¾†Ôñ2j
+h
+fD:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\armeabi-v7a\build_file_index.txt	¾†Ôñ2T Ç÷Êð2k
+i
+gD:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\armeabi-v7a\compile_commands.json	¿†Ôñ2	o
+m
+kD:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\armeabi-v7a\compile_commands.json.bin	¿†Ôñ2
+u
+s
+qD:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\armeabi-v7a\metadata_generation_command.txt	¿†Ôñ2é Å÷Êð2h
+f
+dD:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\armeabi-v7a\prefab_config.json	¿†Ôñ2( Æ÷Êð2m
+k
+iD:\projects\Flutter\Recoding-Platform\android\app\.cxx\Debug\43714g4t\armeabi-v7a\symbol_folder_index.txt	¿†Ôñ2` Æ÷Êð2
+>>>>>>> origin/weam
