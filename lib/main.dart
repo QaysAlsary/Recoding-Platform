@@ -13,8 +13,10 @@ import 'features/profile/bloc/profile_bloc.dart';
 void main() async {
 
   await AppInitializer.init();
+  MapTilerConfig.setApiKey('tBWczgtWITcq8rfJeIuA');
 
   runApp(const MyApp());
+
 }
 
 class MyApp extends StatelessWidget {
