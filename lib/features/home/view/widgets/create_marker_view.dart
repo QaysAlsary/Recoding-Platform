@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:recoding_platform_project/features/home/view/widgets/drop_down_sub_aspect.dart';
 import 'package:recoding_platform_project/src/components/auth_button.dart';
 import 'package:recoding_platform_project/src/components/header.dart';
@@ -109,7 +110,9 @@ class CreateMarkerView extends StatelessWidget {
                       ),
                     ),
                     AuthButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        context.pop();
+                      },
                       text: 'Cancel',
                       buttonWidth: 152.w,
                       textStyle: Theme.of(context)

@@ -13,9 +13,9 @@ import 'features/profile/bloc/profile_bloc.dart';
 
 void main() async {
   await AppInitializer.init();
-  await dotenv.load(fileName: ".env");
+  // await dotenv.load(fileName: ".env");
 
-  MapTilerConfig.setApiKey(dotenv.env['MAP_TILLER_API'] ?? '');
+  MapTilerConfig.setApiKey('tBWczgtWITcq8rfJeIuA');
 
   runApp(const MyApp());
 }

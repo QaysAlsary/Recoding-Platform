@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
+import 'package:recoding_platform_project/src/routing/routes.dart';
 import 'package:recoding_platform_project/src/themes/app_colors.dart';
-
 
 class CreateMarkerButton extends StatelessWidget {
   const CreateMarkerButton({super.key});
@@ -16,15 +17,17 @@ class CreateMarkerButton extends StatelessWidget {
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.blue.withOpacity(0.65),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(100)),
           ),
           onPressed: () {
-
+            context.push(Routes.createMarker);
           },
-          child:  Text('Create Marker' , style: Theme.of(context)
-              .textTheme
-              .labelMedium
-              ?.copyWith(fontSize: 16.r, fontWeight: FontWeight.w700)),
+          child: Text('Create Marker',
+              style: Theme.of(context)
+                  .textTheme
+                  .labelMedium
+                  ?.copyWith(fontSize: 16.r, fontWeight: FontWeight.w700)),
         ),
       ),
     );

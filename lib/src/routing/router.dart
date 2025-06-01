@@ -16,13 +16,12 @@ final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final goRouter = GoRouter(
   navigatorKey: _rootNavigatorKey,
   // initialLocation: Routes.splashScreen,
-  initialLocation: Routes.createMarker,
+  initialLocation: Routes.home,
   observers: [BotToastNavigatorObserver(), CustomNavigationObserver()],
   errorBuilder: (context, state) => const FallbackScreen(),
   routes: [
     GoRoute(
         path: Routes.profile, builder: (context, state) => const ProfileView()),
-    GoRoute(path: Routes.home, builder: (context, state) => const HomeView()),
     GoRoute(
         path: Routes.createMarker,
         builder: (context, state) => const CreateMarkerView()),
