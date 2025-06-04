@@ -40,6 +40,7 @@ TextTheme get textTheme => TextTheme(
       ),
       labelLarge: TextStyle(
         fontSize: 18.sp,
+        fontFamily: 'Oswald',
         fontWeight: FontWeight.w600,
         color: AppColors.black,
       ),

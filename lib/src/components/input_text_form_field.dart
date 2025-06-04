@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../themes/app_colors.dart';
 
+
 //Example for using it in a screen:
 //               InputTextFormField(
 //                 controller: TextEditingController(),
@@ -22,6 +23,7 @@ class InputTextFormField extends StatelessWidget {
   final Widget? prefixIcon; // Prefix icon
   final Widget? suffixIcon; // Suffix icon
   final Widget? icon; // Custom leading icon
+
   final Widget? helper;
   final TextStyle? errorStyle;
   final Widget? counter;
@@ -71,6 +73,7 @@ class InputTextFormField extends StatelessWidget {
         style: Theme.of(context).textTheme.labelMedium,
         decoration: InputDecoration(
           hintText: hintText,
+
           hintStyle: Theme.of(context).textTheme.labelMedium,
           contentPadding:
               EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
@@ -96,6 +99,7 @@ class InputTextFormField extends StatelessWidget {
                 size: 30,
                 color: Colors.black.withOpacity(0.45),
               ),
+
           border: const UnderlineInputBorder(
             borderSide: BorderSide(
               width: 3.73,

@@ -5,7 +5,13 @@ import 'package:recoding_platform_project/features/login/bloc/login_bloc.dart';
 import 'package:recoding_platform_project/features/login/data/repo/login_repo.dart';
 import 'package:recoding_platform_project/features/register/bloc/bloc/register_bloc.dart';
 
+
 final getIt = GetIt.instance;
+
+import '../../features/profile/bloc/profile_bloc.dart';
+
+final sl = GetIt.instance;
+
 
 void setup() {
   getIt.registerLazySingleton<Dio>(() => Dio());
@@ -14,8 +20,14 @@ void setup() {
   getIt.registerFactory<LoginBloc>(
       () => LoginBloc(loginRepository: getIt<LoginRepository>()));
 
+
   getIt.registerLazySingleton<RegisterRepository>(
       () => RegisterRepository(dio: getIt<Dio>()));
   getIt.registerFactory<RegisterBloc>(
       () => RegisterBloc(registerRepository: getIt<RegisterRepository>()));
+
+  static _injectBlocProviders() {
+    sl.registerLazySingleton<ProfileBloc>(() => ProfileBloc());
+  }
+
 }

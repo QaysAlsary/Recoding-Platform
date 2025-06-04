@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:recoding_platform_project/src/constants/image_paths.dart';
+import 'package:recoding_platform_project/src/themes/app_images.dart';
 
 class Header extends StatelessWidget {
   final String? headerText;
