@@ -1,14 +1,26 @@
 import 'package:dio/dio.dart';
-import 'package:happy_tech_mastering_api_with_flutter/cache/cache_helper.dart';
-import 'package:happy_tech_mastering_api_with_flutter/core/api/end_ponits.dart';
+import 'package:recoding_platform_project/src/core/token.dart';
 
 class ApiInterceptor extends Interceptor {
   @override
-  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    options.headers[ApiKey.token] =
-        CacheHelper().getData(key: ApiKey.token) != null
-            ? 'FOODAPI ${CacheHelper().getData(key: ApiKey.token)}'
-            : null;
+  void onRequest(
+      RequestOptions options, RequestInterceptorHandler handler) async {
+    final noAuthPaths = ['/login', '/register'];
+    final token = await TokenManager.getToken();
+
+    if (!noAuthPaths.contains(options.path)) {
+      if (token != null && token.isNotEmpty) {
+        options.headers.addAll({
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        });
+      } else {}
+    } else {
+      options.headers.addAll({
+        'Accept': 'application/json',
+      });
+    }
+
     super.onRequest(options, handler);
   }
 }

@@ -4,11 +4,13 @@ import 'package:recoding_platform_project/src/themes/app_colors.dart';
 
 class DropDownSubAspect extends StatelessWidget {
   final void Function(String?)? onChanged;
-  const DropDownSubAspect({super.key, required this.onChanged});
+  final String? value;
+  const DropDownSubAspect({super.key, required this.onChanged, this.value});
 
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
+      value: value,
       isExpanded: true,
       dropdownColor: Colors.white,
       icon: Icon(
@@ -58,7 +60,7 @@ class DropDownSubAspect extends StatelessWidget {
         'Technology & Digital Infrastructure',
         'Ecological Factor',
         'Social Factor',
-      ].map((cat) => DropdownMenuItem(value: cat, child: Text(cat))).toList(),
+      ].map((sub) => DropdownMenuItem(value: sub, child: Text(sub))).toList(),
       onChanged: onChanged,
     );
   }

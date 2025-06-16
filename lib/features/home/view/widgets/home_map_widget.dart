@@ -44,8 +44,9 @@ class MapTilerWidget extends StatelessWidget {
                 children: [
                   TileLayer(
                     urlTemplate:
-                    'https://api.maptiler.com/maps/openstreetmap/{z}/{x}/{y}.jpg?key=$_maptilerKey',
-                    userAgentPackageName: 'com.example.recoding_platform_project',
+                        'https://api.maptiler.com/maps/openstreetmap/{z}/{x}/{y}.jpg?key=$_maptilerKey',
+                    userAgentPackageName:
+                        'com.example.recoding_platform_project',
                   ),
                   if (markerPos != null)
                     MarkerLayer(
@@ -70,7 +71,9 @@ class MapTilerWidget extends StatelessWidget {
                   mini: true,
                   backgroundColor: Colors.white,
                   onPressed: () {
-                    context.read<HomeBloc>().add(const GetCurrentLocationEvent());
+                    context
+                        .read<HomeBloc>()
+                        .add(const GetCurrentLocationEvent());
                   },
                   child: const Icon(Icons.my_location, color: Colors.black),
                 ),

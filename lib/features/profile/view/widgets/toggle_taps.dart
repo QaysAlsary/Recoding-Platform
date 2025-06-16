@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:recoding_platform_project/features/profile/bloc/toggle/bloc/toggle_bloc.dart';
 
-import '../../bloc/profile_bloc.dart';
+import 'package:recoding_platform_project/features/profile/bloc/toggle/bloc/toggle_event.dart';
+
+import '../../bloc/profile_bloc.dart' hide TabSelected;
 import '../../../../src/themes/app_theme.dart';
 import 'enum_toggle_tabs_type.dart';
 
@@ -11,14 +14,14 @@ class ToggleTabs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final selectedTab =
-        context.select((ProfileBloc bloc) => bloc.state.selectedTab);
-
+    final selectedTab = context.select<ToggleBloc, ToggleTabType>(
+      (bloc) => bloc.state.selectedTab,
+    );
     return Row(
       children: [
         GestureDetector(
           onTap: () => context
-              .read<ProfileBloc>()
+              .read<ToggleBloc>()
               .add(const TabSelected(ToggleTabType.editProfile)),
           child: Row(
             children: [
@@ -49,7 +52,7 @@ class ToggleTabs extends StatelessWidget {
         const Spacer(),
         GestureDetector(
           onTap: () => context
-              .read<ProfileBloc>()
+              .read<ToggleBloc>()
               .add(const TabSelected(ToggleTabType.security)),
           child: Row(
             children: [

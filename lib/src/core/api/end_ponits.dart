@@ -1,23 +1,29 @@
 class EndPoint {
-  static String baseUrl = "https://food-api-omega.vercel.app/api/v1/";
-  static String signIn = "user/signin";
+  static String baseUrl = "http://10.0.2.2:8000/api/";
+  // static String baseUrl = "http://127.0.0.1:8000/api/";
+  static String login = "login";
   static String signUp = "user/signup";
-  static String getUserDataEndPoint(id) {
-    return "user/get-user/$id";
+  static String getProfile = "user/profile";
+  static String locations = "locations";
+  static String getSelectedLocatin(id) {
+    return "locations/$id";
   }
+
+  static String urlUserProfile(id) {
+    return "profile/edit/$id";
+  }
+
+  static String get loginUrl => baseUrl + login;
 }
 
 class ApiKey {
   static String status = "status";
+  static String name = 'name';
+  static String currentPass = 'current_password';
+  static String newPass = 'password';
+  static String newPassConfirm = 'password_confirmation';
+  static String profilePic = 'profile_image';
+  static String email = 'email';
+  static String message = 'message';
   static String errorMessage = "ErrorMessage";
-  static String email = "email";
-  static String password = "password";
-  static String token = "token";
-  static String message = "message";
-  static String id = "id";
-  static String name = "name";
-  static String phone = "phone";
-  static String confirmPassword = "confirmPassword";
-  static String location = "location";
-  static String profilePic = "profilePic";
 }

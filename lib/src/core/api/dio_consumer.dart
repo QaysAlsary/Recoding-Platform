@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
-import 'package:happy_tech_mastering_api_with_flutter/core/api/api_consumer.dart';
-import 'package:happy_tech_mastering_api_with_flutter/core/api/api_interceptors.dart';
-import 'package:happy_tech_mastering_api_with_flutter/core/api/end_ponits.dart';
-import 'package:happy_tech_mastering_api_with_flutter/core/errors/exceptions.dart';
+import 'package:recoding_platform_project/src/core/api/api_consumer.dart';
+import 'package:recoding_platform_project/src/core/api/api_interceptors.dart';
+import 'package:recoding_platform_project/src/core/api/end_ponits.dart';
+import 'package:recoding_platform_project/src/core/errors/exceptions.dart';
 
 class DioConsumer extends ApiConsumer {
   final Dio dio;
@@ -25,11 +25,13 @@ class DioConsumer extends ApiConsumer {
     String path, {
     dynamic data,
     Map<String, dynamic>? queryParameters,
+    Map<String, String>? headers,
     bool isFromData = false,
   }) async {
     try {
       final response = await dio.delete(
         path,
+        options: Options(headers: headers),
         data: isFromData ? FormData.fromMap(data) : data,
         queryParameters: queryParameters,
       );
@@ -40,13 +42,18 @@ class DioConsumer extends ApiConsumer {
   }
 
   @override
-  Future get(String path,
-      {Object? data, Map<String, dynamic>? queryParameters}) async {
+  Future get(
+    String path, {
+    Object? data,
+    Map<String, dynamic>? queryParameters,
+    Map<String, String>? headers,
+  }) async {
     try {
       final response = await dio.get(
         path,
         data: data,
         queryParameters: queryParameters,
+        options: Options(headers: headers),
       );
       return response.data;
     } on DioException catch (e) {
@@ -55,17 +62,19 @@ class DioConsumer extends ApiConsumer {
   }
 
   @override
-  Future patch(
+  Future put(
     String path, {
     dynamic data,
     Map<String, dynamic>? queryParameters,
     bool isFromData = false,
+    Map<String, String>? headers,
   }) async {
     try {
-      final response = await dio.patch(
+      final response = await dio.put(
         path,
         data: isFromData ? FormData.fromMap(data) : data,
         queryParameters: queryParameters,
+        options: Options(headers: headers),
       );
       return response.data;
     } on DioException catch (e) {
@@ -79,12 +88,14 @@ class DioConsumer extends ApiConsumer {
     dynamic data,
     Map<String, dynamic>? queryParameters,
     bool isFromData = false,
+    Map<String, String>? headers,
   }) async {
     try {
       final response = await dio.post(
         path,
         data: isFromData ? FormData.fromMap(data) : data,
         queryParameters: queryParameters,
+        options: Options(headers: headers),
       );
       return response.data;
     } on DioException catch (e) {

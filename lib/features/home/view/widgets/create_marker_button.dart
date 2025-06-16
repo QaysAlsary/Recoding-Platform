@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:recoding_platform_project/features/home/bloc/home_bloc.dart';
+import 'package:recoding_platform_project/src/core/token.dart';
 import 'package:recoding_platform_project/src/routing/routes.dart';
 import 'package:recoding_platform_project/src/themes/app_colors.dart';
 
@@ -20,8 +23,25 @@ class CreateMarkerButton extends StatelessWidget {
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(100)),
           ),
-          onPressed: () {
-            context.push(Routes.createMarker);
+          onPressed: () async {
+            final state = context.read<HomeBloc>().state;
+            if (state is MenuState && state.markerPosition != null) {
+              context.push(
+                Routes.createMarker,
+                extra: {
+                  'latitude': state.markerPosition!.latitude,
+                  'longitude': state.markerPosition!.longitude,
+                },
+              );
+            } else {
+              // Show a message if no marker position is selected
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Please select a location on the map first'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
           },
           child: Text('Create Marker',
               style: Theme.of(context)
