@@ -7,7 +7,6 @@ import 'package:recoding_platform_project/features/home/models/location_model.da
 import 'package:recoding_platform_project/features/home/view/widgets/edit_marker_view.dart';
 import 'package:recoding_platform_project/features/home/view/widgets/create_marker_view.dart';
 import 'package:recoding_platform_project/features/home/view/widgets/marker_details.dart';
-import 'package:recoding_platform_project/features/home/view/widgets/select_marker_view.dart';
 import 'package:recoding_platform_project/features/login/bloc/login_bloc.dart';
 import 'package:recoding_platform_project/features/login/ui/login_screen.dart';
 import 'package:recoding_platform_project/features/profile/bloc/profile_bloc.dart';
@@ -20,16 +19,33 @@ import 'package:recoding_platform_project/src/routing/custom_navigation_observer
 import 'package:recoding_platform_project/src/routing/routes.dart';
 import '../../features/home/view/home_view.dart';
 import 'fallback_screen.dart';
+import 'package:recoding_platform_project/src/core/token.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final goRouter = GoRouter(
   navigatorKey: _rootNavigatorKey,
-  // initialLocation: Routes.splashScreen,
   initialLocation: Routes.login,
-  // initialLocation: Routes.createMarker,
   observers: [BotToastNavigatorObserver(), CustomNavigationObserver()],
   errorBuilder: (context, state) => const FallbackScreen(),
+  redirect: (context, state) async {
+    final token = await TokenManager.getToken();
+    final isLoginRoute = state.matchedLocation == Routes.login;
+    final isRegisterRoute = state.matchedLocation == Routes.register;
+
+    // If we have a token and we're on login/register, redirect to home
+    if (token != null && (isLoginRoute || isRegisterRoute)) {
+      return Routes.home;
+    }
+
+    // If we don't have a token and we're not on login/register, redirect to login
+    if (token == null && !isLoginRoute && !isRegisterRoute) {
+      return Routes.login;
+    }
+
+    // No redirection needed
+    return null;
+  },
   routes: [
     GoRoute(
       path: Routes.home,
@@ -65,32 +81,42 @@ final goRouter = GoRouter(
         );
       },
     ),
-    GoRoute(
-      path: Routes.selectMarker,
-      builder: (context, state) {
-        return BlocProviderWrapper<HomeBloc>(
-          create: (_) => getIt<HomeBloc>(),
-          child: const SelectMarkerView(),
-        );
-      },
-    ),
+
     GoRoute(
       path: Routes.editMarker,
       builder: (context, state) {
-        final location = state.extra as Location;
-        return BlocProviderWrapper<HomeBloc>(
-          create: (_) => getIt<HomeBloc>(),
-          child: EditMarkerView(location: location),
-        );
+        final extra = state.extra;
+        Location? location;
+        if (extra is Location) {
+          location = extra;
+        } else if (extra is Map<String, dynamic> &&
+            extra['location'] is Location) {
+          location = extra['location'] as Location;
+        }
+        if (location == null) {
+          return const FallbackScreen();
+        }
+        return EditMarkerView(location: location);
+        // BlocProviderWrapper<HomeBloc>(
+        //   create: (_) => getIt<HomeBloc>(),
+        //   child: EditMarkerView(location: location),
+        // );
       },
     ),
     GoRoute(
       path: Routes.markerDetails,
       builder: (context, state) {
-        return BlocProviderWrapper<HomeBloc>(
-          create: (_) => getIt<HomeBloc>(),
-          child: const MarkerDetailsPanel(locationId: 3),
-        );
+        // final Map<String, dynamic> extra =
+        //     state.extra as Map<String, dynamic>? ?? {};
+        // final int? locationId = extra['locationId'] as int?;
+        // if (locationId == null) {
+        //   return const FallbackScreen();
+        // }
+        return MarkerDetailsPanel(locationId: 10);
+        // return BlocProviderWrapper<HomeBloc>(
+        //   create: (_) => getIt<HomeBloc>(),
+        //   child: MarkerDetailsPanel(locationId: 11),
+        // );
       },
     ),
     // GoRoute(

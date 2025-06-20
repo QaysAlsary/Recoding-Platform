@@ -33,11 +33,12 @@ class InputTextFormField extends StatelessWidget {
   final TextStyle? hintStyle;
   final bool? enabled;
   final int? maxLines;
-
+  final TextStyle? textStyle;
   InputTextFormField({
     super.key,
     this.enabled = true,
     this.controller,
+    this.textStyle,
     this.maxLines = 1,
     this.decoration,
     this.width,
@@ -76,7 +77,7 @@ class InputTextFormField extends StatelessWidget {
         enabled: enabled,
         validator: validator,
         cursorColor: AppColors.blue,
-        style: Theme.of(context).textTheme.labelMedium,
+        style: textStyle ?? Theme.of(context).textTheme.labelMedium,
         decoration: InputDecoration(
           hintText: hintText,
           hintStyle: hintStyle ?? Theme.of(context).textTheme.labelMedium,

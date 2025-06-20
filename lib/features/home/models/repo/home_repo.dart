@@ -4,6 +4,8 @@ import 'package:recoding_platform_project/features/home/models/location_model.da
 import 'package:recoding_platform_project/src/core/api/api_consumer.dart';
 import 'package:recoding_platform_project/src/core/api/end_ponits.dart';
 import 'package:recoding_platform_project/src/core/errors/exceptions.dart';
+import 'package:dio/dio.dart';
+import 'package:http_parser/http_parser.dart';
 
 class HomeRepo {
   final ApiConsumer api;
@@ -47,22 +49,49 @@ class HomeRepo {
     List<XFile>? newImages,
   }) async {
     try {
+      final Map<String, dynamic> data = {
+        'name': name,
+        'description': description,
+        'aspect_id': aspect,
+        'sub_aspect_id': subAspect,
+        'category_id': category,
+      };
+      print("ggllgg :$data");
+      print('=== EDIT MARKER DEBUG ===');
+      print('Sending to server:');
+      print(
+          'URL: ${EndPoint.baseUrl + EndPoint.getSelectedLocatin(locationId)}');
+      print('Data: $data');
+      print('Method: POST');
+
+      // Add images if provided
+      if (newImages != null && newImages.isNotEmpty) {
+        final List<MultipartFile> imageFiles = await Future.wait(
+          newImages.map((image) async {
+            final bytes = await image.readAsBytes();
+            return MultipartFile.fromBytes(
+              bytes,
+              filename: image.name,
+              contentType: MediaType.parse(image.mimeType ?? 'image/jpeg'),
+            );
+          }),
+        );
+        data['images[]'] = imageFiles;
+      }
+
       final response = await api.put(
         EndPoint.baseUrl + EndPoint.getSelectedLocatin(locationId),
-        data: {
-          'name': name,
-          'description': description,
-          'aspect': aspect,
-          'sub_aspect': subAspect,
-          'category': category,
-          if (newImages != null) 'images': newImages,
-        },
-        isFromData: true,
+        data: data,
       );
+      print('Server response: $response');
+      print('=== END DEBUG ===');
       return Right(response['message'] ?? 'Marker updated successfully');
     } on ServerException catch (e) {
       print(e.errModel.errorMessage);
       return Left(e.errModel.errorMessage);
+    } catch (e) {
+      print('Error updating marker: $e');
+      return Left('Failed to update marker: ${e.toString()}');
     }
   }
 
@@ -77,7 +106,7 @@ class HomeRepo {
     List<XFile>? images,
   }) async {
     try {
-      final data = {
+      final Map<String, dynamic> data = {
         'name': name,
         'aspect_id': aspectId,
         'sub_aspect_id': subAspectId,
@@ -89,9 +118,18 @@ class HomeRepo {
 
       // Add images if provided
       if (images != null && images.isNotEmpty) {
-        // Dio's FormData automatically handles XFile/MultipartFile for 'isFromData: true'
-        // if the value is an XFile or a list of XFile
-        data['images[]'] = images;
+        // Convert XFile to MultipartFile for each image
+        final List<MultipartFile> imageFiles = await Future.wait(
+          images.map((image) async {
+            final bytes = await image.readAsBytes();
+            return MultipartFile.fromBytes(
+              bytes,
+              filename: image.name,
+              contentType: MediaType.parse(image.mimeType ?? 'image/jpeg'),
+            );
+          }),
+        );
+        data['images[]'] = imageFiles;
       }
 
       final response = await api.post(

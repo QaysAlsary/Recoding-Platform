@@ -12,7 +12,8 @@ import 'package:recoding_platform_project/src/routing/routes.dart';
 import '../../../../src/themes/app_colors.dart';
 
 class TopBarWidget extends StatelessWidget {
-  const TopBarWidget({super.key});
+  final VoidCallback? onSettingsPressed;
+  const TopBarWidget({super.key, this.onSettingsPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +30,6 @@ class TopBarWidget extends StatelessWidget {
             child: InkWell(
               onTap: () {
                 context.read<ProfileBloc>().add(LoadProfile());
-
                 context.push(Routes.profile);
               },
               child: BlocBuilder<ProfileBloc, ProfileState>(
@@ -85,7 +85,7 @@ class TopBarWidget extends StatelessWidget {
                   size: 30.r,
                   color: Color(0xff5e5e5e),
                 ),
-                onPressed: () {},
+                onPressed: onSettingsPressed,
               ),
             ],
           ),

@@ -111,11 +111,37 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       }
     });
 
+    on<SelectEditAspectEvent>((event, emit) {
+      final current = state is EditMarkerState
+          ? state as EditMarkerState
+          : const EditMarkerState();
+      print("aspectid: ${event.aspect}");
+
+      emit(current.copyWith(
+        selectedAspect: event.aspect,
+        selectedSubAspect: null,
+        selectedCategory: null,
+      ));
+    });
+
     on<SelectEditSubAspectEvent>((event, emit) {
       final current = state is EditMarkerState
           ? state as EditMarkerState
           : const EditMarkerState();
-      emit(current.copyWith(selectedSubAspect: event.subAspect));
+      print("subaspecid: ${event.subAspect}");
+      emit(current.copyWith(
+        selectedSubAspect: event.subAspect,
+        selectedCategory: null,
+      ));
+    });
+
+    on<SelectEditCategoryEvent>((event, emit) {
+      final current = state is EditMarkerState
+          ? state as EditMarkerState
+          : const EditMarkerState();
+      print("catid: ${event.category}");
+
+      emit(current.copyWith(selectedCategory: event.category));
     });
 
     on<UpdateEditMarkerImagesEvent>((event, emit) {
@@ -141,6 +167,42 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         updatedImages.removeAt(event.index);
       }
       emit(current.copyWith(selectedImages: updatedImages));
+    });
+
+    on<SelectCreateAspectEvent>((event, emit) {
+      final current = state is CreateMarkerFormState
+          ? state as CreateMarkerFormState
+          : const CreateMarkerFormState();
+      emit(current.copyWith(
+        selectedAspect: event.aspect,
+        selectedSubAspect: null, // Reset sub-aspect when aspect changes
+      ));
+    });
+
+    on<SelectCreateSubAspectEvent>((event, emit) {
+      final current = state is CreateMarkerFormState
+          ? state as CreateMarkerFormState
+          : const CreateMarkerFormState();
+      emit(current.copyWith(
+        selectedSubAspect: event.subAspect,
+        selectedCategory: null, // Reset only category
+      ));
+    });
+
+    on<SelectCreateCategoryEvent>((event, emit) {
+      final current = state is CreateMarkerFormState
+          ? state as CreateMarkerFormState
+          : const CreateMarkerFormState();
+      emit(current.copyWith(selectedCategory: event.category));
+    });
+
+    on<InitEditMarkerEvent>((event, emit) {
+      emit(EditMarkerState(
+          selectedAspect: event.aspect,
+          selectedSubAspect: event.subAspect,
+          selectedCategory: event.category,
+          newImages: event.newImages,
+          name: event.name));
     });
   }
   Future<void> _fetchLocationDetailsEvent(
@@ -181,14 +243,22 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       locationId: event.locationId,
       name: event.name,
       description: event.description,
-      aspect: event.aspect,
-      subAspect: event.subAspect,
-      category: event.category,
+      aspect: event.aspect.toString(),
+      subAspect: event.subAspect.toString(),
+      category: event.category.toString(),
       newImages: event.newImages,
     );
 
     result.fold(
-      (error) => emit(EditMarkerError(error)),
+      (error) {
+        emit(EditMarkerError(error));
+        if (EditMarkerState is EditMarkerState) {
+          emit(EditMarkerState(
+              selectedAspect: event.aspect,
+              selectedSubAspect: event.subAspect,
+              selectedCategory: event.category));
+        }
+      },
       (message) => emit(EditMarkerSuccess(message)),
     );
   }
@@ -198,9 +268,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     Emitter<HomeState> emit,
   ) async {
     try {
-      final currentImages = state is CreateMarkerFormState
-          ? (state as CreateMarkerFormState).selectedImages
-          : <XFile>[];
+      final currentState = state is CreateMarkerFormState
+          ? state as CreateMarkerFormState
+          : const CreateMarkerFormState();
 
       emit(const CreateMarkerLoading());
 
@@ -218,24 +288,27 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       result.fold(
         (error) {
           emit(CreateMarkerError(error));
-          emit(CreateMarkerFormState(selectedImages: currentImages));
+          // Preserve the form state including dropdown selections
+          emit(currentState);
         },
         (message) => emit(CreateMarkerSuccess(message)),
       );
     } on ServerException catch (e) {
-      final currentImages = state is CreateMarkerFormState
-          ? (state as CreateMarkerFormState).selectedImages
-          : <XFile>[];
+      final currentState = state is CreateMarkerFormState
+          ? state as CreateMarkerFormState
+          : const CreateMarkerFormState();
 
       emit(CreateMarkerError(e.errModel.errorMessage));
-      emit(CreateMarkerFormState(selectedImages: currentImages));
+      // Preserve the form state including dropdown selections
+      emit(currentState);
     } catch (e) {
-      final currentImages = state is CreateMarkerFormState
-          ? (state as CreateMarkerFormState).selectedImages
-          : <XFile>[];
+      final currentState = state is CreateMarkerFormState
+          ? state as CreateMarkerFormState
+          : const CreateMarkerFormState();
 
       emit(CreateMarkerError('Failed to create marker: ${e.toString()}'));
-      emit(CreateMarkerFormState(selectedImages: currentImages));
+      // Preserve the form state including dropdown selections
+      emit(currentState);
     }
   }
 }

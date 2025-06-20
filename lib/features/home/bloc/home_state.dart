@@ -38,9 +38,9 @@ final class LocationLoaded extends HomeState {
 
 final class MenuState extends HomeState {
   final String? openMenuLabel;
-  final String? selectedCategory;
-  final String? selectedFilterCategory;
-  final String? selectedSubAspect;
+  final int? selectedCategory;
+  final int? selectedFilterCategory;
+  final int? selectedSubAspect;
   final LatLng? markerPosition;
 
   const MenuState({
@@ -137,56 +137,95 @@ final class CreateMarkerError extends HomeState {
 }
 
 final class EditMarkerState extends HomeState {
-  final String? selectedSubAspect;
-  final String? selectedAspect;
-  final String? selectedCategory;
+  final int? selectedAspect;
+  final int? selectedSubAspect;
+  final int? selectedCategory;
   final List<File> newImages;
 
+  final String? name;
+
+  static const _unset = Object();
+
   const EditMarkerState({
-    this.selectedSubAspect,
     this.selectedAspect,
+    this.selectedSubAspect,
     this.selectedCategory,
     this.newImages = const [],
+    this.name,
   });
 
   EditMarkerState copyWith({
-    String? selectedSubAspect,
-    String? selectedAspect,
-    String? selectedCategory,
+    Object? selectedAspect = _unset,
+    Object? selectedSubAspect = _unset,
+    Object? selectedCategory = _unset,
     List<File>? newImages,
+    String? name,
   }) {
     return EditMarkerState(
-      selectedSubAspect: selectedSubAspect ?? this.selectedSubAspect,
-      selectedAspect: selectedAspect ?? this.selectedAspect,
-      selectedCategory: selectedCategory ?? this.selectedCategory,
+      selectedAspect: identical(selectedAspect, _unset)
+          ? this.selectedAspect
+          : selectedAspect as int?,
+      selectedSubAspect: identical(selectedSubAspect, _unset)
+          ? this.selectedSubAspect
+          : selectedSubAspect as int?,
+      selectedCategory: identical(selectedCategory, _unset)
+          ? this.selectedCategory
+          : selectedCategory as int?,
       newImages: newImages ?? this.newImages,
+      name: name ?? this.name,
     );
   }
 
   @override
   List<Object?> get props => [
-        selectedSubAspect,
         selectedAspect,
+        selectedSubAspect,
         selectedCategory,
         newImages,
+        name,
       ];
 }
 
 final class CreateMarkerFormState extends HomeState {
   final List<XFile> selectedImages;
+  final int? selectedAspect;
+  final int? selectedSubAspect;
+  final int? selectedCategory;
+
+  static const _unset = Object();
 
   const CreateMarkerFormState({
     this.selectedImages = const [],
+    this.selectedAspect,
+    this.selectedSubAspect,
+    this.selectedCategory,
   });
 
   CreateMarkerFormState copyWith({
     List<XFile>? selectedImages,
+    Object? selectedAspect = _unset,
+    Object? selectedSubAspect = _unset,
+    Object? selectedCategory = _unset,
   }) {
     return CreateMarkerFormState(
       selectedImages: selectedImages ?? this.selectedImages,
+      selectedAspect: identical(selectedAspect, _unset)
+          ? this.selectedAspect
+          : selectedAspect as int?,
+      selectedSubAspect: identical(selectedSubAspect, _unset)
+          ? this.selectedSubAspect
+          : selectedSubAspect as int?,
+      selectedCategory: identical(selectedCategory, _unset)
+          ? this.selectedCategory
+          : selectedCategory as int?,
     );
   }
 
   @override
-  List<Object?> get props => [selectedImages];
+  List<Object?> get props => [
+        selectedImages,
+        selectedAspect,
+        selectedSubAspect,
+        selectedCategory,
+      ];
 }

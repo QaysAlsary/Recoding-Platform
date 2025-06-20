@@ -3,39 +3,24 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:recoding_platform_project/features/home/models/aspect_model.dart';
 import 'package:recoding_platform_project/src/themes/app_colors.dart';
 
-class DropDownSubAspect extends StatelessWidget {
+class DropDownAspect extends StatelessWidget {
+  final void Function(int?)? onChanged;
   final int? value;
-  final int? selectedAspect;
-  final Function(int?) onChanged;
-
-  const DropDownSubAspect({
-    super.key,
-    required this.value,
-    required this.selectedAspect,
-    required this.onChanged,
-  });
+  const DropDownAspect({super.key, required this.onChanged, this.value});
 
   @override
   Widget build(BuildContext context) {
-    final subAspects = selectedAspect != null
-        ? AspectData.getSubAspectsForAspect(selectedAspect!)
-        : <SubAspect>[];
-    final validValue =
-        value != null && subAspects.any((s) => s.id == value) ? value : null;
     return DropdownButtonFormField<int>(
-      value: validValue,
+      value: value,
+      isExpanded: true,
       dropdownColor: Colors.white,
-      icon: const Icon(
+      icon: Icon(
         Icons.keyboard_arrow_down_outlined,
         color: Color(0xff787878),
       ),
-      isExpanded: true,
       decoration: InputDecoration(
-        hintText: 'Sub-aspect',
-        hintStyle: Theme.of(context)
-            .textTheme
-            .labelMedium
-            ?.copyWith(fontSize: 16.r, fontWeight: FontWeight.w300),
+        hintText: 'Aspect',
+        hintStyle: Theme.of(context).textTheme.labelMedium,
         contentPadding: const EdgeInsets.symmetric(vertical: 12),
         border: const UnderlineInputBorder(
           borderSide: BorderSide(
@@ -61,18 +46,21 @@ class DropDownSubAspect extends StatelessWidget {
           color: Color(0xff787878),
         ),
       ),
-      style: Theme.of(context).textTheme.labelMedium?.copyWith(fontSize: 16.sp),
-      items: subAspects
-          .map((subAspect) => DropdownMenuItem(
-                value: subAspect.id,
+      style: Theme.of(context)
+          .textTheme
+          .labelMedium
+          ?.copyWith(fontSize: 16.sp, fontWeight: FontWeight.w400),
+      items: AspectData.getAspects()
+          .map((aspect) => DropdownMenuItem(
+                value: aspect.id,
                 child: Text(
-                  subAspect.name,
+                  aspect.name,
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
                 ),
               ))
           .toList(),
-      onChanged: selectedAspect != null ? onChanged : null,
+      onChanged: onChanged,
     );
   }
 }

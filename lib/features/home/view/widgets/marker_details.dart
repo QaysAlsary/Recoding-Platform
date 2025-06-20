@@ -10,6 +10,7 @@ import 'package:recoding_platform_project/src/core/api/end_ponits.dart';
 import 'package:recoding_platform_project/src/di/service_locator.dart';
 import 'package:recoding_platform_project/src/routing/routes.dart';
 import '../../bloc/home_bloc.dart';
+import '../../models/aspect_model.dart';
 
 class MarkerDetailsPanel extends StatefulWidget {
   final int locationId;
@@ -51,12 +52,19 @@ class _MarkerDetailsPanelState extends State<MarkerDetailsPanel> {
   void _handleStateChanges(BuildContext context, HomeState state) {
     if (state is DeleteMarkerSuccess) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(state.message)),
+        SnackBar(
+          content: Text(state.message),
+          backgroundColor: Colors.green,
+        ),
       );
+
       context.go(Routes.home);
     } else if (state is DeleteMarkerError) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(state.message)),
+        SnackBar(
+          content: Text(state.message),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -89,8 +97,8 @@ class _MarkerDetailsPanelState extends State<MarkerDetailsPanel> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(height: 8.h),
-                _buildMarkerName(),
-                SizedBox(height: 6.h),
+                _buildMarkerName(state),
+                SizedBox(height: 25.h),
                 _buildMarkerDetails(state),
                 SizedBox(height: 20.h),
                 _buildActionButtons(state),
@@ -102,9 +110,9 @@ class _MarkerDetailsPanelState extends State<MarkerDetailsPanel> {
     );
   }
 
-  Widget _buildMarkerName() {
+  Widget _buildMarkerName(LocationLoaded state) {
     return Text(
-      'Marker Name',
+      state.location.name,
       style: Theme.of(context).textTheme.labelMedium?.copyWith(
             fontSize: 18.sp,
             fontWeight: FontWeight.bold,
@@ -113,30 +121,41 @@ class _MarkerDetailsPanelState extends State<MarkerDetailsPanel> {
   }
 
   Widget _buildMarkerDetails(LocationLoaded state) {
+    final aspectName = state.location.aspectId != null
+        ? AspectData.getAspectById(state.location.aspectId!)?.name ?? 'N/A'
+        : 'N/A';
+    final subAspectName = state.location.subAspectId != null
+        ? AspectData.getSubAspectById(state.location.subAspectId!)?.name ??
+            'N/A'
+        : 'N/A';
+    final categoryName = state.location.categoryId != null
+        ? AspectData.getCategoryById(state.location.categoryId!)?.name ?? 'N/A'
+        : 'N/A';
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildDetailField(
-          'Aspect: ${state.location.aspect ?? "N/A"}',
-          Icons.sync,
-        ),
-        SizedBox(height: 6.h),
-        _buildDetailField(
-          'Sub-aspect: ${state.location.subAspect ?? "N/A"}',
+          'Aspect: $aspectName',
           Icons.other_houses_outlined,
         ),
-        SizedBox(height: 6.h),
+        SizedBox(height: 20.h),
         _buildDetailField(
-          'Category: ${state.location.category ?? "N/A"}',
+          'Sub-aspect: $subAspectName',
+          Icons.other_houses_outlined,
+        ),
+        SizedBox(height: 20.h),
+        _buildDetailField(
+          'Category: $categoryName',
           Icons.category_outlined,
         ),
-        SizedBox(height: 6.h),
+        SizedBox(height: 20.h),
         _buildDetailField(
           'Location name: ${state.location.name}',
-          Icons.input,
+          Icons.location_on_outlined,
         ),
-        SizedBox(height: 6.h),
+        SizedBox(height: 20.h),
         _buildDescriptionField(state),
-        SizedBox(height: 14.h),
+        SizedBox(height: 20.h),
         _buildImagesField(state),
       ],
     );
@@ -162,7 +181,7 @@ class _MarkerDetailsPanelState extends State<MarkerDetailsPanel> {
           'Description:',
           Icons.description_outlined,
         ),
-        SizedBox(height: 6.h),
+        SizedBox(height: 15.h),
         SizedBox(
           height: 100.h,
           child: Scrollbar(
@@ -192,7 +211,7 @@ class _MarkerDetailsPanelState extends State<MarkerDetailsPanel> {
       children: [
         _buildDetailField(
           'Images:',
-          Icons.image,
+          Icons.image_outlined,
         ),
         SizedBox(height: 14.h),
         SizedBox(
@@ -212,6 +231,12 @@ class _MarkerDetailsPanelState extends State<MarkerDetailsPanel> {
   }
 
   Widget _buildImageItem(dynamic image) {
+    String? imagePath;
+    if (image is Map<String, dynamic>) {
+      imagePath = image['image_path'] as String?;
+    } else {
+      imagePath = image.imagePath;
+    }
     return Container(
       width: 120.w,
       height: 120.w,
@@ -221,7 +246,7 @@ class _MarkerDetailsPanelState extends State<MarkerDetailsPanel> {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(10.r),
         child: CachedNetworkImage(
-          imageUrl: '${EndPoint.baseUrl}${image.imagePath}',
+          imageUrl: imagePath != null ? EndPoint.imageBaseUrl + imagePath : '',
           fit: BoxFit.cover,
           placeholder: (context, url) => Container(
             color: const Color(0xffd9d9d9),
@@ -307,7 +332,7 @@ class _MarkerDetailsPanelState extends State<MarkerDetailsPanel> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => context.pop(),
             child: Text(
               'Cancel',
               style: TextStyle(
@@ -318,7 +343,7 @@ class _MarkerDetailsPanelState extends State<MarkerDetailsPanel> {
           ),
           ElevatedButton(
             onPressed: () {
-              Navigator.of(context).pop();
+              context.pop();
               context
                   .read<HomeBloc>()
                   .add(DeleteMarkerEvent(state.location.id));

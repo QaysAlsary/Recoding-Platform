@@ -5,7 +5,10 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:recoding_platform_project/features/home/bloc/home_bloc.dart';
-import 'package:recoding_platform_project/features/home/view/widgets/drop_down_sub_aspect.dart';
+import 'package:recoding_platform_project/features/home/view/widgets/drop_down_aspect.dart';
+import 'package:recoding_platform_project/features/home/view/widgets/drop_down_category.dart';
+import 'package:recoding_platform_project/features/home/view/widgets/drop_down_sub_aspect.dart'
+    hide DropDownCategory;
 import 'package:recoding_platform_project/src/components/auth_button.dart';
 import 'package:recoding_platform_project/src/components/header.dart';
 import 'package:recoding_platform_project/src/components/input_text_form_field.dart';
@@ -29,17 +32,11 @@ class CreateMarkerView extends StatefulWidget {
 class _CreateMarkerViewState extends State<CreateMarkerView> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _aspectIdController = TextEditingController();
-  final TextEditingController _subAspectIdController = TextEditingController();
-  final TextEditingController _categoryIdController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
 
   @override
   void dispose() {
     _nameController.dispose();
-    _aspectIdController.dispose();
-    _subAspectIdController.dispose();
-    _categoryIdController.dispose();
     _descriptionController.dispose();
     super.dispose();
   }
@@ -62,17 +59,25 @@ class _CreateMarkerViewState extends State<CreateMarkerView> {
 
   void _createMarker() {
     if (_formKey.currentState!.validate()) {
+      final state = context.read<HomeBloc>().state;
       final currentImages =
-          (context.read<HomeBloc>().state is CreateMarkerFormState)
-              ? (context.read<HomeBloc>().state as CreateMarkerFormState)
-                  .selectedImages
-              : <XFile>[];
+          (state is CreateMarkerFormState) ? state.selectedImages : <XFile>[];
+
+      final aspectId = (state is CreateMarkerFormState)
+          ? state.selectedAspect?.toString()
+          : null;
+      final subAspectId = (state is CreateMarkerFormState)
+          ? state.selectedSubAspect?.toString()
+          : null;
+      final categoryId = (state is CreateMarkerFormState)
+          ? state.selectedCategory?.toString()
+          : null;
 
       context.read<HomeBloc>().add(CreateMarkerEvent(
             name: _nameController.text,
-            aspectId: _aspectIdController.text,
-            subAspectId: _subAspectIdController.text,
-            categoryId: _categoryIdController.text,
+            aspectId: aspectId,
+            subAspectId: subAspectId,
+            categoryId: categoryId,
             latitude: widget.initialLatitude,
             longitude: widget.initialLongitude,
             description: _descriptionController.text,
@@ -124,27 +129,15 @@ class _CreateMarkerViewState extends State<CreateMarkerView> {
                         _buildInputField(
                             controller: _nameController,
                             hintText: "Name",
-                            icon: Icons.text_fields,
+                            icon: Icons.location_on_outlined,
                             validator: (value) =>
                                 value!.isEmpty ? 'Please enter a name' : null),
                         SizedBox(height: 16.h),
-                        _buildInputField(
-                            controller: _aspectIdController,
-                            hintText: "Aspect",
-                            icon: Icons.sync,
-                            validator: (value) => value!.isEmpty
-                                ? 'Please enter an aspect'
-                                : null),
+                        _buildAspectDropdown(state),
                         SizedBox(height: 16.h),
                         _buildSubAspectDropdown(state),
                         SizedBox(height: 16.h),
-                        _buildInputField(
-                            controller: _categoryIdController,
-                            hintText: "Category",
-                            icon: Icons.category_outlined,
-                            validator: (value) => value!.isEmpty
-                                ? 'Please enter a category'
-                                : null),
+                        _buildCategoryDropdown(state),
                         SizedBox(height: 16.h),
                         _buildInputField(
                             controller: _descriptionController,
@@ -231,22 +224,13 @@ class _CreateMarkerViewState extends State<CreateMarkerView> {
     );
   }
 
-  Widget _buildSubAspectDropdown(HomeState state) {
-    return DropDownSubAspect(
-      onChanged: (value) {
-        // Handle sub-aspect selection if needed
-      },
-    );
-  }
-
   Widget _buildImageUploadField() {
     return GestureDetector(
       onTap: _handleImageSelection,
       child: InputTextFormField(
         hintText: "Upload images",
         enabled: false,
-        prefixIcon:
-            const Icon(Icons.cloud_upload_outlined, color: Color(0xff787878)),
+        prefixIcon: const Icon(Icons.image_outlined, color: Color(0xff787878)),
         suffixIcon: const Icon(Icons.upload_rounded),
       ),
     );
@@ -305,6 +289,43 @@ class _CreateMarkerViewState extends State<CreateMarkerView> {
           child: const Icon(Icons.close, color: Colors.red, size: 16),
         ),
       ),
+    );
+  }
+
+  Widget _buildAspectDropdown(HomeState state) {
+    return DropDownAspect(
+      value: (state is CreateMarkerFormState) ? state.selectedAspect : null,
+      onChanged: (value) {
+        if (value != null) {
+          context.read<HomeBloc>().add(SelectCreateAspectEvent(value));
+        }
+      },
+    );
+  }
+
+  Widget _buildSubAspectDropdown(HomeState state) {
+    return DropDownSubAspect(
+      value: (state is CreateMarkerFormState) ? state.selectedSubAspect : null,
+      selectedAspect:
+          (state is CreateMarkerFormState) ? state.selectedAspect : null,
+      onChanged: (value) {
+        if (value != null) {
+          context.read<HomeBloc>().add(SelectCreateSubAspectEvent(value));
+        }
+      },
+    );
+  }
+
+  Widget _buildCategoryDropdown(HomeState state) {
+    return DropDownCategory(
+      value: (state is CreateMarkerFormState) ? state.selectedCategory : null,
+      selectedSubAspect:
+          (state is CreateMarkerFormState) ? state.selectedSubAspect : null,
+      onChanged: (value) {
+        if (value != null) {
+          context.read<HomeBloc>().add(SelectCreateCategoryEvent(value));
+        }
+      },
     );
   }
 }

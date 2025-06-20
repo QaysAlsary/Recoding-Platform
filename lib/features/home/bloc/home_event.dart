@@ -17,7 +17,7 @@ final class ToggleMenuEvent extends HomeEvent {
 }
 
 final class SelectCategoryEvent extends HomeEvent {
-  final String category;
+  final int category;
 
   const SelectCategoryEvent(this.category);
 
@@ -26,7 +26,7 @@ final class SelectCategoryEvent extends HomeEvent {
 }
 
 final class SelectFilterCategoryEvent extends HomeEvent {
-  final String category;
+  final int category;
 
   const SelectFilterCategoryEvent(this.category);
 
@@ -35,7 +35,7 @@ final class SelectFilterCategoryEvent extends HomeEvent {
 }
 
 final class SelectSubAspectEvent extends HomeEvent {
-  final String subAspect;
+  final int subAspect;
 
   const SelectSubAspectEvent(this.subAspect);
 
@@ -44,12 +44,39 @@ final class SelectSubAspectEvent extends HomeEvent {
 }
 
 final class SelectEditSubAspectEvent extends HomeEvent {
-  final String subAspect;
+  final int subAspect;
 
   const SelectEditSubAspectEvent(this.subAspect);
 
   @override
   List<Object?> get props => [subAspect];
+}
+
+final class SelectCreateAspectEvent extends HomeEvent {
+  final int aspect;
+
+  const SelectCreateAspectEvent(this.aspect);
+
+  @override
+  List<Object> get props => [aspect];
+}
+
+final class SelectCreateSubAspectEvent extends HomeEvent {
+  final int subAspect;
+
+  const SelectCreateSubAspectEvent(this.subAspect);
+
+  @override
+  List<Object> get props => [subAspect];
+}
+
+final class SelectCreateCategoryEvent extends HomeEvent {
+  final int category;
+
+  const SelectCreateCategoryEvent(this.category);
+
+  @override
+  List<Object> get props => [category];
 }
 
 final class MapTappedEvent extends HomeEvent {
@@ -87,9 +114,9 @@ final class EditMarkerEvent extends HomeEvent {
   final int locationId;
   final String name;
   final String description;
-  final String? aspect;
-  final String? subAspect;
-  final String? category;
+  final int? aspect;
+  final int? subAspect;
+  final int? category;
   final List<XFile>? newImages;
 
   const EditMarkerEvent({
@@ -117,6 +144,14 @@ final class EditMarkerEvent extends HomeEvent {
 final class UpdateEditMarkerImagesEvent extends HomeEvent {
   final List<File> images;
   const UpdateEditMarkerImagesEvent(this.images);
+
+  @override
+  List<Object?> get props => [images];
+}
+
+final class UpdateEditMarkerNetworkImagesEvent extends HomeEvent {
+  final List<String> images;
+  const UpdateEditMarkerNetworkImagesEvent(this.images);
 
   @override
   List<Object?> get props => [images];
@@ -170,4 +205,41 @@ final class RemoveCreateMarkerImageEvent extends HomeEvent {
 
   @override
   List<Object?> get props => [index];
+}
+
+final class SelectEditAspectEvent extends HomeEvent {
+  final int aspect;
+
+  const SelectEditAspectEvent(this.aspect);
+
+  @override
+  List<Object> get props => [aspect];
+}
+
+final class SelectEditCategoryEvent extends HomeEvent {
+  final int category;
+
+  const SelectEditCategoryEvent(this.category);
+
+  @override
+  List<Object> get props => [category];
+}
+
+final class InitEditMarkerEvent extends HomeEvent {
+  final int? aspect;
+  final int? subAspect;
+  final int? category;
+  final List<File> newImages;
+  final String? name;
+
+  const InitEditMarkerEvent({
+    this.aspect,
+    this.subAspect,
+    this.category,
+    this.newImages = const [],
+    this.name,
+  });
+
+  @override
+  List<Object?> get props => [aspect, subAspect, category, newImages, name];
 }

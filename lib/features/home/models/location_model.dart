@@ -3,8 +3,9 @@ import 'package:recoding_platform_project/features/login/data/models/user_model.
 class Location {
   final int id;
   final String name;
-  final String? subAspect;
-  final String? category;
+  final int? aspectId;
+  final int? subAspectId;
+  final int? categoryId;
   final String? description;
   final int userId;
   final double latitude;
@@ -14,13 +15,13 @@ class Location {
   final User user;
   final List<dynamic> images;
   final List<dynamic> references;
-  final String? aspect;
 
   Location({
     required this.id,
     required this.name,
-    this.subAspect,
-    this.category,
+    this.aspectId,
+    this.subAspectId,
+    this.categoryId,
     this.description,
     required this.userId,
     required this.latitude,
@@ -30,15 +31,15 @@ class Location {
     required this.user,
     required this.images,
     required this.references,
-    this.aspect,
   });
 
   factory Location.fromJson(Map<String, dynamic> json) {
     return Location(
       id: json['id'],
       name: json['name'],
-      subAspect: json['sub_aspect'],
-      category: json['category'],
+      aspectId: json['aspect_id'],
+      subAspectId: json['sub_aspect_id'],
+      categoryId: json['category_id'],
       description: json['description'],
       userId: json['user_id'],
       latitude: double.parse(json['latitude']),
@@ -48,7 +49,6 @@ class Location {
       user: User.fromJson(json['user']),
       images: json['images'] ?? [],
       references: json['references'] ?? [],
-      aspect: json['aspect'],
     );
   }
 }

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:recoding_platform_project/src/components/auth_button.dart';
 import 'package:recoding_platform_project/src/components/input_text_form_field.dart';
 import 'package:recoding_platform_project/src/routing/routes.dart';
+import 'package:recoding_platform_project/features/home/models/aspect_model.dart';
 
 import '../../../../src/themes/app_colors.dart';
 import '../../bloc/home_bloc.dart';
@@ -65,7 +66,7 @@ class MenuContentWidget extends StatelessWidget {
               final selectedCategory =
                   state is MenuState ? state.selectedCategory : null;
 
-              return DropdownButtonFormField<String>(
+              return DropdownButtonFormField<int>(
                 value: selectedCategory,
                 dropdownColor: Colors.white,
                 icon: Icon(
@@ -107,9 +108,11 @@ class MenuContentWidget extends StatelessWidget {
                     .textTheme
                     .labelMedium
                     ?.copyWith(fontSize: 16.r, fontWeight: FontWeight.w300),
-                items: ['Category A', 'Category B', 'Category C']
-                    .map(
-                        (cat) => DropdownMenuItem(value: cat, child: Text(cat)))
+                items: AspectData.getAspects()
+                    .map((aspect) => DropdownMenuItem(
+                          value: aspect.id,
+                          child: Text(aspect.name),
+                        ))
                     .toList(),
                 onChanged: (value) {
                   if (value != null) {
@@ -181,7 +184,7 @@ class MenuContentWidget extends StatelessWidget {
             builder: (context, state) {
               final selected =
                   state is MenuState ? state.selectedFilterCategory : null;
-              return DropdownButtonFormField<String>(
+              return DropdownButtonFormField<int>(
                 value: selected,
                 dropdownColor: Colors.white,
                 icon: Icon(
@@ -224,8 +227,12 @@ class MenuContentWidget extends StatelessWidget {
                     .labelMedium
                     ?.copyWith(fontSize: 16.r, fontWeight: FontWeight.w300),
                 items: ['Environment', 'Infrastructure', 'Transport']
-                    .map(
-                        (cat) => DropdownMenuItem(value: cat, child: Text(cat)))
+                    .asMap()
+                    .map((index, cat) => MapEntry(
+                          index,
+                          DropdownMenuItem(value: index, child: Text(cat)),
+                        ))
+                    .values
                     .toList(),
                 onChanged: (value) {
                   if (value != null) {
@@ -242,7 +249,7 @@ class MenuContentWidget extends StatelessWidget {
             builder: (context, state) {
               final selected =
                   state is MenuState ? state.selectedSubAspect : null;
-              return DropdownButtonFormField<String>(
+              return DropdownButtonFormField<int>(
                 value: selected,
                 dropdownColor: Colors.white,
                 icon: Icon(
@@ -285,8 +292,12 @@ class MenuContentWidget extends StatelessWidget {
                     .labelMedium
                     ?.copyWith(fontSize: 16.r, fontWeight: FontWeight.w300),
                 items: ['Aspect 1', 'Aspect 2', 'Aspect 3']
-                    .map(
-                        (sub) => DropdownMenuItem(value: sub, child: Text(sub)))
+                    .asMap()
+                    .map((index, sub) => MapEntry(
+                          index,
+                          DropdownMenuItem(value: index, child: Text(sub)),
+                        ))
+                    .values
                     .toList(),
                 onChanged: (value) {
                   if (value != null) {
