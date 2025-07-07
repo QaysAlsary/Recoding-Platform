@@ -1,0 +1,84 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:recoding_platform_project/features/profile/bloc/toggle/bloc/toggle_bloc.dart';
+
+import 'package:recoding_platform_project/features/profile/bloc/toggle/bloc/toggle_event.dart';
+
+import '../../bloc/profile_bloc.dart' hide TabSelected;
+import '../../../../src/themes/app_theme.dart';
+import 'enum_toggle_tabs_type.dart';
+
+class ToggleTabs extends StatelessWidget {
+  const ToggleTabs({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedTab = context.select<ToggleBloc, ToggleTabType>(
+      (bloc) => bloc.state.selectedTab,
+    );
+    return Row(
+      children: [
+        GestureDetector(
+          onTap: () => context
+              .read<ToggleBloc>()
+              .add(const TabSelected(ToggleTabType.editProfile)),
+          child: Row(
+            children: [
+              Opacity(
+                opacity: selectedTab == ToggleTabType.editProfile ? 1.0 : 0.5,
+                child: Icon(
+                  size:
+                      selectedTab == ToggleTabType.editProfile ? 25.sp : 22.sp,
+                  Icons.edit_outlined,
+                ),
+              ),
+              SizedBox(
+                width: 6.w,
+              ),
+              Text(
+                "Edit Profile",
+                style: appTheme.textTheme.labelLarge?.copyWith(
+                  fontSize:
+                      selectedTab == ToggleTabType.editProfile ? 22.sp : 18.sp,
+                  color: appTheme.textTheme.labelLarge!.color!.withOpacity(
+                    selectedTab == ToggleTabType.editProfile ? 1.0 : 0.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const Spacer(),
+        GestureDetector(
+          onTap: () => context
+              .read<ToggleBloc>()
+              .add(const TabSelected(ToggleTabType.security)),
+          child: Row(
+            children: [
+              Opacity(
+                  opacity: selectedTab == ToggleTabType.security ? 1.0 : 0.5,
+                  child: Icon(
+                    size: selectedTab == ToggleTabType.security ? 25.sp : 22.sp,
+                    Icons.lock_outlined,
+                  )),
+              SizedBox(
+                width: 6.w,
+              ),
+              Text(
+                "Security",
+                style: appTheme.textTheme.labelLarge?.copyWith(
+                  fontSize:
+                      selectedTab == ToggleTabType.security ? 22.sp : 18.sp,
+                  color: appTheme.textTheme.labelLarge!.color!.withOpacity(
+                    selectedTab == ToggleTabType.security ? 1.0 : 0.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
