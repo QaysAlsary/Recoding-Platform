@@ -1,22 +1,15 @@
 import 'package:dartz/dartz.dart';
 import 'package:image_picker/image_picker.dart';
-<<<<<<< HEAD
-import 'package:recoding_platform_project/features/home/models/location_model.dart';
-=======
 import 'package:recoding_platform_project/features/home/models/aspect_model.dart';
 import 'package:recoding_platform_project/features/home/models/location_model.dart';
 import 'package:recoding_platform_project/features/home/models/marker_model.dart';
->>>>>>> qays
 import 'package:recoding_platform_project/src/core/api/api_consumer.dart';
 import 'package:recoding_platform_project/src/core/api/end_ponits.dart';
 import 'package:recoding_platform_project/src/core/errors/exceptions.dart';
 import 'package:dio/dio.dart';
 import 'package:http_parser/http_parser.dart';
-<<<<<<< HEAD
-=======
 import '../sub_aspect_model.dart';
 import '../category_model.dart';
->>>>>>> qays
 
 class HomeRepo {
   final ApiConsumer api;
@@ -54,15 +47,9 @@ class HomeRepo {
     required int locationId,
     required String name,
     required String description,
-<<<<<<< HEAD
-    required String? aspect,
-    required String? subAspect,
-    required String? category,
-=======
     required int? aspect,
     required int? subAspect,
     required int? category,
->>>>>>> qays
     List<XFile>? newImages,
   }) async {
     try {
@@ -114,15 +101,9 @@ class HomeRepo {
 
   Future<Either<String, String>> createMarker({
     required String name,
-<<<<<<< HEAD
-    String? aspectId,
-    String? subAspectId,
-    String? categoryId,
-=======
     int? aspectId,
     int? subAspectId,
     int? categoryId,
->>>>>>> qays
     required double latitude,
     required double longitude,
     String? description,
@@ -169,8 +150,6 @@ class HomeRepo {
       return Left('Failed to create marker: ${e.toString()}');
     }
   }
-<<<<<<< HEAD
-=======
 
   Future<Either<String, List<MarkerData>>> getAllMarkers() async {
     try {
@@ -255,5 +234,4 @@ class HomeRepo {
       return Left('Failed to fetch categories: ${e.toString()}');
     }
   }
->>>>>>> qays
 }
