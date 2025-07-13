@@ -14,4 +14,7 @@ abstract class AppIcons {
   static String name = 'ic_name.svg'.iconAssetPath;
   static String sub_aspect = 'ic_sub_aspect.svg'.iconAssetPath;
   static String aspect = 'ic_aspect.svg'.iconAssetPath;
+  static String marker = 'ic_marker.png'.iconAssetPath;
+  static String addMarker = 'ic_add_marker.png'.iconAssetPath;
+  static String myLocation = 'ic_my_location.png'.iconAssetPath;
 }

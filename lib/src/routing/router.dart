@@ -1,9 +1,11 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:go_router/go_router.dart';
 import 'package:recoding_platform_project/features/home/bloc/home_bloc.dart';
 import 'package:recoding_platform_project/features/home/models/location_model.dart';
+import 'package:recoding_platform_project/features/home/models/marker_model.dart';
 import 'package:recoding_platform_project/features/home/view/widgets/edit_marker_view.dart';
 import 'package:recoding_platform_project/features/home/view/widgets/create_marker_view.dart';
 import 'package:recoding_platform_project/features/home/view/widgets/marker_details.dart';
@@ -25,7 +27,7 @@ final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final goRouter = GoRouter(
   navigatorKey: _rootNavigatorKey,
-  initialLocation: Routes.login,
+  initialLocation: Routes.home,
   observers: [BotToastNavigatorObserver(), CustomNavigationObserver()],
   errorBuilder: (context, state) => const FallbackScreen(),
   redirect: (context, state) async {
@@ -106,17 +108,14 @@ final goRouter = GoRouter(
     GoRoute(
       path: Routes.markerDetails,
       builder: (context, state) {
-        // final Map<String, dynamic> extra =
-        //     state.extra as Map<String, dynamic>? ?? {};
-        // final int? locationId = extra['locationId'] as int?;
-        // if (locationId == null) {
-        //   return const FallbackScreen();
-        // }
-        return MarkerDetailsPanel(locationId: 10);
-        // return BlocProviderWrapper<HomeBloc>(
-        //   create: (_) => getIt<HomeBloc>(),
-        //   child: MarkerDetailsPanel(locationId: 11),
-        // );
+        // Extract extra and locationId from state.extra
+        final Map<String, dynamic> extra =
+            state.extra as Map<String, dynamic>? ?? {};
+        final MarkerData marker = extra['marker'] as MarkerData;
+        return BlocProviderWrapper<HomeBloc>(
+          create: (_) => getIt<HomeBloc>(),
+          child: MarkerDetailsPanel(marker: marker),
+        );
       },
     ),
     // GoRoute(

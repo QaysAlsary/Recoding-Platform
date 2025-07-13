@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
+import 'package:recoding_platform_project/features/home/models/marker_model.dart';
 import 'package:recoding_platform_project/src/components/input_text_form_field.dart';
 import 'package:recoding_platform_project/src/components/auth_button.dart';
 import 'package:recoding_platform_project/src/components/header.dart';
@@ -11,13 +13,14 @@ import 'package:recoding_platform_project/src/di/service_locator.dart';
 import 'package:recoding_platform_project/src/routing/routes.dart';
 import '../../bloc/home_bloc.dart';
 import '../../models/aspect_model.dart';
+import '../../models/location_model.dart';
 
 class MarkerDetailsPanel extends StatefulWidget {
-  final int locationId;
+  final MarkerData marker;
 
   const MarkerDetailsPanel({
     super.key,
-    required this.locationId,
+    required this.marker,
   });
 
   @override
@@ -30,7 +33,9 @@ class _MarkerDetailsPanelState extends State<MarkerDetailsPanel> {
   @override
   void initState() {
     super.initState();
-    context.read<HomeBloc>().add(FetchLocationDetailsEvent(widget.locationId));
+    final homeBloc = context.read<HomeBloc>();
+    homeBloc.add(FetchLocationDetailsEvent(widget.marker.id));
+    // Do NOT fetch sub-aspects or categories here; wait for LocationLoaded
   }
 
   @override
@@ -43,7 +48,7 @@ class _MarkerDetailsPanelState extends State<MarkerDetailsPanel> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: BlocConsumer<HomeBloc, HomeState>(
-        listener: _handleStateChanges,
+        listener: (context, state) => _handleStateChanges(context, state),
         builder: (context, state) => _buildBody(state),
       ),
     );
@@ -58,7 +63,7 @@ class _MarkerDetailsPanelState extends State<MarkerDetailsPanel> {
         ),
       );
 
-      context.go(Routes.home);
+      // context.go(Routes.home);
     } else if (state is DeleteMarkerError) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -70,22 +75,24 @@ class _MarkerDetailsPanelState extends State<MarkerDetailsPanel> {
   }
 
   Widget _buildBody(HomeState state) {
-    if (state is LocationLoading || state is DeleteMarkerLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
+    print('current2 Homestate is : $state');
 
+    // Handle error states
     if (state is LocationError) {
       return Center(child: Text(state.message));
     }
 
-    if (state is LocationLoaded) {
-      return _buildLoadedContent(state);
+    if (state is LocationLoading || state is DeleteMarkerLoading) {
+      return const Center(child: CircularProgressIndicator());
     }
 
-    return const SizedBox.shrink();
+    if (state is EditMarkerState) {
+      return _buildLoadedContent(state);
+    }
+    return const Center(child: Text("Something went wrong"));
   }
 
-  Widget _buildLoadedContent(LocationLoaded state) {
+  Widget _buildLoadedContent(EditMarkerState state) {
     return SingleChildScrollView(
       padding: EdgeInsets.only(bottom: 80.h),
       child: Column(
@@ -99,7 +106,7 @@ class _MarkerDetailsPanelState extends State<MarkerDetailsPanel> {
                 SizedBox(height: 8.h),
                 _buildMarkerName(state),
                 SizedBox(height: 25.h),
-                _buildMarkerDetails(state),
+                _buildDetailsContent(state),
                 SizedBox(height: 20.h),
                 _buildActionButtons(state),
               ],
@@ -110,26 +117,29 @@ class _MarkerDetailsPanelState extends State<MarkerDetailsPanel> {
     );
   }
 
-  Widget _buildMarkerName(LocationLoaded state) {
+  Widget _buildMarkerName(EditMarkerState state) {
     return Text(
-      state.location.name,
-      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-            fontSize: 18.sp,
-            fontWeight: FontWeight.bold,
-          ),
+      state.location!.name,
+      style: Theme.of(context)
+          .textTheme
+          .labelMedium
+          ?.copyWith(fontSize: 24.sp, fontWeight: FontWeight.w400
+              // fontWeight: FontWeight.bold,
+              ),
     );
   }
 
-  Widget _buildMarkerDetails(LocationLoaded state) {
-    final aspectName = state.location.aspectId != null
-        ? AspectData.getAspectById(state.location.aspectId!)?.name ?? 'N/A'
+  Widget _buildDetailsContent(EditMarkerState state) {
+    final homeBloc = context.read<HomeBloc>();
+
+    final aspectName = state.location!.aspectId != null
+        ? homeBloc.getAspectNameById(state.location!.aspectId!) ?? 'N/A'
         : 'N/A';
-    final subAspectName = state.location.subAspectId != null
-        ? AspectData.getSubAspectById(state.location.subAspectId!)?.name ??
-            'N/A'
+    final subAspectName = state.location!.subAspectId != null
+        ? homeBloc.getSubAspectNameById(state.location!.subAspectId!) ?? 'N/A'
         : 'N/A';
-    final categoryName = state.location.categoryId != null
-        ? AspectData.getCategoryById(state.location.categoryId!)?.name ?? 'N/A'
+    final categoryName = state.location!.categoryId != null
+        ? homeBloc.getCategoryNameById(state.location!.categoryId!) ?? 'N/A'
         : 'N/A';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -150,7 +160,7 @@ class _MarkerDetailsPanelState extends State<MarkerDetailsPanel> {
         ),
         SizedBox(height: 20.h),
         _buildDetailField(
-          'Location name: ${state.location.name}',
+          'Location name: ${state.location!.name}',
           Icons.location_on_outlined,
         ),
         SizedBox(height: 20.h),
@@ -173,7 +183,7 @@ class _MarkerDetailsPanelState extends State<MarkerDetailsPanel> {
     );
   }
 
-  Widget _buildDescriptionField(LocationLoaded state) {
+  Widget _buildDescriptionField(EditMarkerState state) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -182,8 +192,11 @@ class _MarkerDetailsPanelState extends State<MarkerDetailsPanel> {
           Icons.description_outlined,
         ),
         SizedBox(height: 15.h),
-        SizedBox(
-          height: 100.h,
+        ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: 100.h,
+            minHeight: 0,
+          ),
           child: Scrollbar(
             controller: _descScrollController,
             interactive: true,
@@ -192,7 +205,7 @@ class _MarkerDetailsPanelState extends State<MarkerDetailsPanel> {
               controller: _descScrollController,
               physics: const BouncingScrollPhysics(),
               child: Text(
-                state.location.description ?? 'No description available',
+                state.location!.description ?? 'No description available',
                 style: Theme.of(context)
                     .textTheme
                     .labelMedium
@@ -205,7 +218,7 @@ class _MarkerDetailsPanelState extends State<MarkerDetailsPanel> {
     );
   }
 
-  Widget _buildImagesField(LocationLoaded state) {
+  Widget _buildImagesField(EditMarkerState state) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -214,18 +227,19 @@ class _MarkerDetailsPanelState extends State<MarkerDetailsPanel> {
           Icons.image_outlined,
         ),
         SizedBox(height: 14.h),
-        SizedBox(
-          height: 120.w,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            shrinkWrap: true,
-            physics: const BouncingScrollPhysics(),
-            itemCount: state.location.images.length,
-            separatorBuilder: (context, index) => SizedBox(width: 8.w),
-            itemBuilder: (context, index) =>
-                _buildImageItem(state.location.images[index]),
-          ),
-        ),
+        if (state.location!.images.isNotEmpty)
+          SizedBox(
+            height: 120.w,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              shrinkWrap: true,
+              physics: const BouncingScrollPhysics(),
+              itemCount: state.location!.images.length,
+              separatorBuilder: (context, index) => SizedBox(width: 8.w),
+              itemBuilder: (context, index) =>
+                  _buildImageItem(state.location!.images[index]),
+            ),
+          )
       ],
     );
   }
@@ -263,7 +277,7 @@ class _MarkerDetailsPanelState extends State<MarkerDetailsPanel> {
     );
   }
 
-  Widget _buildActionButtons(LocationLoaded state) {
+  Widget _buildActionButtons(EditMarkerState state) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -311,11 +325,20 @@ class _MarkerDetailsPanelState extends State<MarkerDetailsPanel> {
     );
   }
 
-  void _handleEdit(LocationLoaded state) {
+  void _handleEdit(EditMarkerState state) {
+    context.read<HomeBloc>().add(FetchLocationDetailsEvent(state.location!.id));
+
     context.push(Routes.editMarker, extra: state.location);
+    // context.read<HomeBloc>().add(FetchAspectsEvent());
+    // context
+    //     .read<HomeBloc>()
+    //     .add(FetchSubAspectsEvent(state.location!.aspectId!));
+    // context
+    //     .read<HomeBloc>()
+    //     .add(FetchCategoriesEvent(state.location!.subAspectId!));
   }
 
-  void _handleDelete(LocationLoaded state) {
+  void _handleDelete(EditMarkerState state) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -343,10 +366,13 @@ class _MarkerDetailsPanelState extends State<MarkerDetailsPanel> {
           ),
           ElevatedButton(
             onPressed: () {
-              context.pop();
               context
                   .read<HomeBloc>()
-                  .add(DeleteMarkerEvent(state.location.id));
+                  .add(DeleteMarkerEvent(state.location!.id));
+              context.read<HomeBloc>().add(const FetchAllMarkersEvent());
+              Future.delayed(const Duration(milliseconds: 500), () {
+                context.go(Routes.home);
+              });
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,

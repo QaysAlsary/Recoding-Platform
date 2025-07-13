@@ -1,41 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:recoding_platform_project/features/home/models/aspect_model.dart';
+import 'package:recoding_platform_project/features/home/models/sub_aspect_model.dart';
 import 'package:recoding_platform_project/src/themes/app_colors.dart';
 
 class DropDownSubAspect extends StatelessWidget {
   final int? value;
-  final int? selectedAspect;
-  final Function(int?) onChanged;
-
+  final void Function(int?)? onChanged;
+  final bool isLoading;
+  final String? error;
+  final List<SubAspectModel> items;
   const DropDownSubAspect({
     super.key,
-    required this.value,
-    required this.selectedAspect,
+    this.value,
     required this.onChanged,
+    this.isLoading = false,
+    this.error,
+    this.items = const [],
   });
 
   @override
   Widget build(BuildContext context) {
-    final subAspects = selectedAspect != null
-        ? AspectData.getSubAspectsForAspect(selectedAspect!)
-        : <SubAspect>[];
     final validValue =
-        value != null && subAspects.any((s) => s.id == value) ? value : null;
+        value != null && items.any((s) => s.id == value) ? value : null;
+    if (error != null) {
+      return Text(error!);
+    }
     return DropdownButtonFormField<int>(
+      key: ValueKey('subaspect_${items.length}_$validValue'),
       value: validValue,
+      isExpanded: true,
       dropdownColor: Colors.white,
-      icon: const Icon(
+      icon: Icon(
         Icons.keyboard_arrow_down_outlined,
         color: Color(0xff787878),
       ),
-      isExpanded: true,
       decoration: InputDecoration(
         hintText: 'Sub-aspect',
-        hintStyle: Theme.of(context)
-            .textTheme
-            .labelMedium
-            ?.copyWith(fontSize: 16.r, fontWeight: FontWeight.w300),
+        hintStyle: Theme.of(context).textTheme.labelMedium,
         contentPadding: const EdgeInsets.symmetric(vertical: 12),
         border: const UnderlineInputBorder(
           borderSide: BorderSide(
@@ -61,8 +62,11 @@ class DropDownSubAspect extends StatelessWidget {
           color: Color(0xff787878),
         ),
       ),
-      style: Theme.of(context).textTheme.labelMedium?.copyWith(fontSize: 16.sp),
-      items: subAspects
+      style: Theme.of(context)
+          .textTheme
+          .labelMedium
+          ?.copyWith(fontSize: 16.sp, fontWeight: FontWeight.w400),
+      items: items
           .map((subAspect) => DropdownMenuItem(
                 value: subAspect.id,
                 child: Text(
@@ -72,7 +76,7 @@ class DropDownSubAspect extends StatelessWidget {
                 ),
               ))
           .toList(),
-      onChanged: selectedAspect != null ? onChanged : null,
+      onChanged: onChanged,
     );
   }
 }

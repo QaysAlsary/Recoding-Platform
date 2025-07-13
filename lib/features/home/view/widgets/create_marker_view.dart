@@ -35,6 +35,13 @@ class _CreateMarkerViewState extends State<CreateMarkerView> {
   final TextEditingController _descriptionController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    context.read<HomeBloc>().add(InitCreateMarkerEvent());
+    context.read<HomeBloc>().add(FetchAspectsEvent());
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
@@ -63,16 +70,15 @@ class _CreateMarkerViewState extends State<CreateMarkerView> {
       final currentImages =
           (state is CreateMarkerFormState) ? state.selectedImages : <XFile>[];
 
-      final aspectId = (state is CreateMarkerFormState)
-          ? state.selectedAspect?.toString()
-          : null;
-      final subAspectId = (state is CreateMarkerFormState)
-          ? state.selectedSubAspect?.toString()
-          : null;
-      final categoryId = (state is CreateMarkerFormState)
-          ? state.selectedCategory?.toString()
-          : null;
-
+      final aspectId =
+          (state is CreateMarkerFormState) ? state.selectedAspect : null;
+      final subAspectId =
+          (state is CreateMarkerFormState) ? state.selectedSubAspect : null;
+      final categoryId =
+          (state is CreateMarkerFormState) ? state.selectedCategory : null;
+      print("aspect 11111111 $aspectId");
+      print("aspect 11111111 $subAspectId");
+      print("aspect 11111111 $categoryId");
       context.read<HomeBloc>().add(CreateMarkerEvent(
             name: _nameController.text,
             aspectId: aspectId,
@@ -109,98 +115,168 @@ class _CreateMarkerViewState extends State<CreateMarkerView> {
           }
         },
         builder: (context, state) {
+          print(
+              "EditMarkerState: aspect=${state is CreateMarkerFormState ? state.selectedAspect : null}, subAspect=${state is CreateMarkerFormState ? state.selectedSubAspect : null}, category=${state is CreateMarkerFormState ? state.selectedCategory : null}");
+          print(
+              "EditMarkerState: aspects=${state is CreateMarkerFormState ? state.aspects.length : null}, subAspects=${state is CreateMarkerFormState ? state.subAspects.length : null}, categories=${state is CreateMarkerFormState ? state.categories.length : null}");
+
           final selectedImages = (state is CreateMarkerFormState)
               ? state.selectedImages
               : <XFile>[]; // Get images from state
-          return SingleChildScrollView(
-            child: Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  Header(
-                    headerText: "Create Marker",
-                  ),
-                  SizedBox(height: 20.h),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 50.w),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildInputField(
-                            controller: _nameController,
-                            hintText: "Name",
-                            icon: Icons.location_on_outlined,
-                            validator: (value) =>
-                                value!.isEmpty ? 'Please enter a name' : null),
-                        SizedBox(height: 16.h),
-                        _buildAspectDropdown(state),
-                        SizedBox(height: 16.h),
-                        _buildSubAspectDropdown(state),
-                        SizedBox(height: 16.h),
-                        _buildCategoryDropdown(state),
-                        SizedBox(height: 16.h),
-                        _buildInputField(
-                            controller: _descriptionController,
-                            hintText: "Description",
-                            icon: Icons.description_outlined,
-                            validator: (value) => value!.isEmpty
-                                ? 'Please enter description'
-                                : null),
-                        SizedBox(height: 16.h),
-                        _buildImageUploadField(),
-                        SizedBox(
-                          height: 8,
-                        ),
-                        if (selectedImages.isNotEmpty)
-                          _buildImageGallery(selectedImages),
-                        SizedBox(height: 30.h),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            AuthButton(
-                              onPressed: _createMarker,
-                              buttonWidth: 152.w,
-                              text: "Create",
-                              textStyle: Theme.of(context)
-                                  .textTheme
-                                  .labelMedium
-                                  ?.copyWith(
-                                      fontSize: 18.sp,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white),
-                              buttonStyle: ElevatedButton.styleFrom(
-                                backgroundColor: Color(0xff6ab3d9),
-                                foregroundColor: AppColors.black073,
-                                elevation: 0,
-                                overlayColor: Color(0xff6ab3d9),
-                                shadowColor: Colors.transparent,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(25),
-                                ),
+          return Form(
+            key: _formKey,
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                Header(
+                  headerText: "Create Marker",
+                ),
+                SizedBox(height: 20.h),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 50.w),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildInputField(
+                          controller: _nameController,
+                          hintText: "Name",
+                          icon: Icons.location_on_outlined,
+                          validator: (value) =>
+                              value!.isEmpty ? 'Please enter a name' : null),
+                      SizedBox(height: 16.h),
+                      DropDownAspect(
+                        value: (state is CreateMarkerFormState)
+                            ? state.selectedAspect
+                            : null,
+                        onChanged: (selectedId) {
+                          if (selectedId != null) {
+                            context
+                                .read<HomeBloc>()
+                                .add(SelectCreateAspectEvent(selectedId));
+                            context
+                                .read<HomeBloc>()
+                                .add(FetchSubAspectsEvent(selectedId));
+                          }
+                        },
+                        isLoading: (state is CreateMarkerFormState)
+                            ? state.isLoadingAspects
+                            : false,
+                        error: (state is CreateMarkerFormState)
+                            ? state.aspectsError
+                            : null,
+                        items: (state is CreateMarkerFormState)
+                            ? state.aspects
+                            : [],
+                      ),
+                      SizedBox(height: 16.h),
+                      DropDownSubAspect(
+                        value: (state is CreateMarkerFormState)
+                            ? state.selectedSubAspect
+                            : null,
+                        onChanged: (selectedId) {
+                          if (selectedId != null) {
+                            context
+                                .read<HomeBloc>()
+                                .add(SelectCreateSubAspectEvent(selectedId));
+                            context
+                                .read<HomeBloc>()
+                                .add(FetchCategoriesEvent(selectedId));
+                          }
+                        },
+                        isLoading: (state is CreateMarkerFormState)
+                            ? state.isLoadingSubAspects
+                            : false,
+                        error: (state is CreateMarkerFormState)
+                            ? state.subAspectsError
+                            : null,
+                        items: (state is CreateMarkerFormState)
+                            ? state.subAspects
+                            : [],
+                      ),
+                      SizedBox(height: 16.h),
+                      DropDownCategory(
+                        value: (state is CreateMarkerFormState)
+                            ? state.selectedCategory
+                            : null,
+                        onChanged: (selectedId) {
+                          if (selectedId != null) {
+                            context
+                                .read<HomeBloc>()
+                                .add(SelectCreateCategoryEvent(selectedId));
+                          }
+                        },
+                        isLoading: (state is CreateMarkerFormState)
+                            ? state.isLoadingCategories
+                            : false,
+                        error: (state is CreateMarkerFormState)
+                            ? state.categoriesError
+                            : null,
+                        items: (state is CreateMarkerFormState)
+                            ? state.categories
+                            : [],
+                      ),
+                      SizedBox(height: 16.h),
+                      _buildInputField(
+                          controller: _descriptionController,
+                          hintText: "Description",
+                          icon: Icons.description_outlined,
+                          validator: (value) => value!.isEmpty
+                              ? 'Please enter description'
+                              : null),
+                      SizedBox(height: 16.h),
+                      _buildImageUploadField(),
+                      SizedBox(
+                        height: 8,
+                      ),
+                      if (selectedImages.isNotEmpty)
+                        _buildImageGallery(selectedImages),
+                      SizedBox(height: 30.h),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          AuthButton(
+                            onPressed: _createMarker,
+                            buttonWidth: 152.w,
+                            text: "Create",
+                            textStyle: Theme.of(context)
+                                .textTheme
+                                .labelMedium
+                                ?.copyWith(
+                                    fontSize: 18.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white),
+                            buttonStyle: ElevatedButton.styleFrom(
+                              backgroundColor: Color(0xff6ab3d9),
+                              foregroundColor: AppColors.black073,
+                              elevation: 0,
+                              overlayColor: Color(0xff6ab3d9),
+                              shadowColor: Colors.transparent,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(25),
                               ),
                             ),
-                            AuthButton(
-                              onPressed: () {
-                                context.pop();
-                              },
-                              text: 'Cancel',
-                              buttonWidth: 152.w,
-                              textStyle: Theme.of(context)
-                                  .textTheme
-                                  .labelMedium
-                                  ?.copyWith(
-                                      fontSize: 18.sp,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 20.h),
-                      ],
-                    ),
+                          ),
+                          AuthButton(
+                            onPressed: () {
+                              context.pop();
+                            },
+                            text: 'Cancel',
+                            buttonWidth: 152.w,
+                            textStyle: Theme.of(context)
+                                .textTheme
+                                .labelMedium
+                                ?.copyWith(
+                                    fontSize: 18.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 20.h),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           );
         },
@@ -289,43 +365,6 @@ class _CreateMarkerViewState extends State<CreateMarkerView> {
           child: const Icon(Icons.close, color: Colors.red, size: 16),
         ),
       ),
-    );
-  }
-
-  Widget _buildAspectDropdown(HomeState state) {
-    return DropDownAspect(
-      value: (state is CreateMarkerFormState) ? state.selectedAspect : null,
-      onChanged: (value) {
-        if (value != null) {
-          context.read<HomeBloc>().add(SelectCreateAspectEvent(value));
-        }
-      },
-    );
-  }
-
-  Widget _buildSubAspectDropdown(HomeState state) {
-    return DropDownSubAspect(
-      value: (state is CreateMarkerFormState) ? state.selectedSubAspect : null,
-      selectedAspect:
-          (state is CreateMarkerFormState) ? state.selectedAspect : null,
-      onChanged: (value) {
-        if (value != null) {
-          context.read<HomeBloc>().add(SelectCreateSubAspectEvent(value));
-        }
-      },
-    );
-  }
-
-  Widget _buildCategoryDropdown(HomeState state) {
-    return DropDownCategory(
-      value: (state is CreateMarkerFormState) ? state.selectedCategory : null,
-      selectedSubAspect:
-          (state is CreateMarkerFormState) ? state.selectedSubAspect : null,
-      onChanged: (value) {
-        if (value != null) {
-          context.read<HomeBloc>().add(SelectCreateCategoryEvent(value));
-        }
-      },
     );
   }
 }

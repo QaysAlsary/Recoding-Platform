@@ -16,6 +16,29 @@ final class ToggleMenuEvent extends HomeEvent {
   List<Object?> get props => [label];
 }
 
+final class CloseMenuEvent extends HomeEvent {
+  const CloseMenuEvent();
+
+  @override
+  List<Object?> get props => [];
+}
+
+final class ClearFiltersEvent extends HomeEvent {
+  const ClearFiltersEvent();
+
+  @override
+  List<Object?> get props => [];
+}
+
+final class UpdateSearchNameEvent extends HomeEvent {
+  final String searchName;
+
+  const UpdateSearchNameEvent(this.searchName);
+
+  @override
+  List<Object?> get props => [searchName];
+}
+
 final class SelectCategoryEvent extends HomeEvent {
   final int category;
 
@@ -23,6 +46,15 @@ final class SelectCategoryEvent extends HomeEvent {
 
   @override
   List<Object?> get props => [category];
+}
+
+final class SelectMultipleCategoriesEvent extends HomeEvent {
+  final List<String> categories;
+
+  const SelectMultipleCategoriesEvent(this.categories);
+
+  @override
+  List<Object?> get props => [categories];
 }
 
 final class SelectFilterCategoryEvent extends HomeEvent {
@@ -159,9 +191,9 @@ final class UpdateEditMarkerNetworkImagesEvent extends HomeEvent {
 
 final class CreateMarkerEvent extends HomeEvent {
   final String name;
-  final String? aspectId;
-  final String? subAspectId;
-  final String? categoryId;
+  final int? aspectId;
+  final int? subAspectId;
+  final int? categoryId;
   final double latitude;
   final double longitude;
   final String? description;
@@ -242,4 +274,125 @@ final class InitEditMarkerEvent extends HomeEvent {
 
   @override
   List<Object?> get props => [aspect, subAspect, category, newImages, name];
+}
+
+final class InitCreateMarkerEvent extends HomeEvent {
+  const InitCreateMarkerEvent();
+
+  @override
+  List<Object?> get props => [];
+}
+
+final class FetchAllMarkersEvent extends HomeEvent {
+  const FetchAllMarkersEvent();
+
+  @override
+  List<Object?> get props => [];
+}
+
+final class FetchAspectsEvent extends HomeEvent {
+  const FetchAspectsEvent();
+
+  @override
+  List<Object?> get props => [];
+}
+
+final class FetchSubAspectsEvent extends HomeEvent {
+  final int aspectId;
+  const FetchSubAspectsEvent(this.aspectId);
+  @override
+  List<Object?> get props => [aspectId];
+}
+
+final class FilterMarkersByCategoriesAndNames extends HomeEvent {
+  final List<String> selectedCategories;
+  final String? searchName;
+
+  const FilterMarkersByCategoriesAndNames({
+    required this.selectedCategories,
+    this.searchName,
+  });
+
+  @override
+  List<Object?> get props => [selectedCategories, searchName];
+}
+
+final class ToggleCategorySelectionEvent extends HomeEvent {
+  final String category;
+
+  const ToggleCategorySelectionEvent(this.category);
+
+  @override
+  List<Object?> get props => [category];
+}
+
+final class ExtractCategoriesFromMarkersEvent extends HomeEvent {
+  const ExtractCategoriesFromMarkersEvent();
+
+  @override
+  List<Object?> get props => [];
+}
+
+final class FetchCategoriesEvent extends HomeEvent {
+  final int subAspectId;
+  const FetchCategoriesEvent(this.subAspectId);
+  @override
+  List<Object?> get props => [subAspectId];
+}
+
+final class ToggleAspectSelectionEvent extends HomeEvent {
+  final String aspect;
+  const ToggleAspectSelectionEvent(this.aspect);
+
+  @override
+  List<Object?> get props => [aspect];
+}
+
+final class ToggleSubaspectSelectionEvent extends HomeEvent {
+  final String subaspect;
+  const ToggleSubaspectSelectionEvent(this.subaspect);
+
+  @override
+  List<Object?> get props => [subaspect];
+}
+
+final class FilterMarkersByAspectAndSubaspect extends HomeEvent {
+  final List<String> aspects;
+  final List<String> subaspects;
+  const FilterMarkersByAspectAndSubaspect(
+      {required this.aspects, required this.subaspects});
+
+  @override
+  List<Object?> get props => [aspects, subaspects];
+}
+
+final class ClearAspectSubaspectFiltersEvent extends HomeEvent {
+  const ClearAspectSubaspectFiltersEvent();
+
+  @override
+  List<Object?> get props => [];
+}
+
+final class FetchFilteredMarkerByCategoryAndName extends HomeEvent {
+  const FetchFilteredMarkerByCategoryAndName();
+
+  @override
+  List<Object?> get props => [];
+}
+
+final class FetchFilteredMarkerByAspectAndSubAspect extends HomeEvent {
+  const FetchFilteredMarkerByAspectAndSubAspect();
+
+  @override
+  List<Object?> get props => [];
+}
+
+final class SelectFilterAspectEvent extends HomeEvent {
+  final String aspectName;
+  const SelectFilterAspectEvent(this.aspectName);
+}
+
+final class SelectFilterSubAspectEvent extends HomeEvent {
+  final String subAspectName;
+  const SelectFilterSubAspectEvent(this.subAspectName);
 }

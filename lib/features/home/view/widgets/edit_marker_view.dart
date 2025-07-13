@@ -21,31 +21,58 @@ import '../../models/aspect_model.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
-class EditMarkerView extends StatelessWidget {
+class EditMarkerView extends StatefulWidget {
   final Location location;
-  final _formKey = GlobalKey<FormState>();
-  final TextEditingController _nameController;
-  final TextEditingController _descriptionController;
 
-  EditMarkerView({
+  const EditMarkerView({
     super.key,
     required this.location,
-  })  : _nameController = TextEditingController(text: location.name),
-        _descriptionController =
-            TextEditingController(text: location.description ?? '');
+  });
 
-  void _initBlocState(BuildContext context) {
-    final state = context.read<HomeBloc>().state;
-    if (state is! EditMarkerState) {
-      context.read<HomeBloc>().add(InitEditMarkerEvent(
-            aspect: location.aspectId,
-            subAspect: location.subAspectId,
-            category: location.categoryId,
-            newImages: [],
-            name: location.name,
-          ));
-    }
+  @override
+  State<EditMarkerView> createState() => _EditMarkerViewState();
+}
+
+class _EditMarkerViewState extends State<EditMarkerView> {
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _nameController;
+  late final TextEditingController _descriptionController;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.location.name);
+    _descriptionController =
+        TextEditingController(text: widget.location.description ?? '');
   }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  // void _initBlocState(BuildContext context) {
+  //   final bloc = context.read<HomeBloc>();
+  //   final state = bloc.state;
+  //   if (state is! EditMarkerState) {
+  //     bloc.add(InitEditMarkerEvent(
+  //       aspect: location.aspectId,
+  //       subAspect: location.subAspectId,
+  //       category: location.categoryId,
+  //       newImages: [],
+  //       name: location.name,
+  //     ));
+  //     bloc.add(FetchAspectsEvent());
+  //     if (location.aspectId != null) {
+  //       bloc.add(FetchSubAspectsEvent(location.aspectId!));
+  //     }
+  //     if (location.subAspectId != null) {
+  //       bloc.add(FetchCategoriesEvent(location.subAspectId!));
+  //     }
+  //   }
+  // }
 
   Future<void> _handleImageSelection(BuildContext context) async {
     final ImagePicker picker = ImagePicker();
@@ -143,10 +170,9 @@ class EditMarkerView extends StatelessWidget {
     List<XFile> images = (state is EditMarkerState)
         ? state.newImages.map((file) => XFile(file.path)).toList()
         : <XFile>[];
-    print('id1:$aspectId ,id2:$subAspectId , id3: $categoryId');
     context.read<HomeBloc>().add(
           EditMarkerEvent(
-            locationId: location.id,
+            locationId: widget.location.id,
             name: _nameController.text,
             description: _descriptionController.text,
             aspect: aspectId,
@@ -159,7 +185,23 @@ class EditMarkerView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    _initBlocState(context);
+    //   Future.microtask(() {
+    // context.read<HomeBloc>().add(InitEditMarkerEvent(
+    //   aspect: location.aspectId,
+    //   subAspect: location.subAspectId,
+    //   category: location.categoryId,
+    //   newImages: [],
+    //   name: location.name,
+    // ));
+    // context.read<HomeBloc>().add(FetchAspectsEvent());
+    // if (location.aspectId != null) {
+    //   context.read<HomeBloc>().add(FetchSubAspectsEvent(location.aspectId!));
+    // }
+    // if (location.subAspectId != null) {
+    //   context.read<HomeBloc>().add(FetchCategoriesEvent(location.subAspectId!));
+    // }
+    //   });
+    // _initBlocState(context);
     return Scaffold(
       body: BlocConsumer<HomeBloc, HomeState>(
         listener: (context, state) {
@@ -172,44 +214,59 @@ class EditMarkerView extends StatelessWidget {
             );
             context.go(Routes.home);
           } else if (state is EditMarkerState) {
-            print("hello 1 ${state.selectedAspect}");
-            print("hello 2 ${state.selectedSubAspect}");
-            print("hello 3 ${state.selectedCategory}");
+            print(
+                "EditMarkerState: aspect=${state.selectedAspect}, subAspect=${state.selectedSubAspect}, category=${state.selectedCategory}");
+            print(
+                "EditMarkerState: aspects=${state.aspects.length}, subAspects=${state.subAspects.length}, categories=${state.categories.length}");
           } else if (state is EditMarkerError) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
+              ),
             );
+            context
+                .read<HomeBloc>()
+                .add(FetchLocationDetailsEvent(widget.location.id));
           }
         },
         builder: (context, state) {
-          List<File> images = [];
-          if (state is EditMarkerState) {
-            images = state.newImages.map((file) => File(file.path)).toList();
+          // Loading state
+          if (state is LocationLoading || state is EditMarkerLoading) {
+            return const Center(child: CircularProgressIndicator());
           }
+          // Error state
 
-          return SingleChildScrollView(
-            child: Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  const Header(headerText: 'Edit Marker'),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 32.w),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(height: 24.h),
-                        _buildFormFields(context, state, images),
-                        SizedBox(height: 32.h),
-                        _buildActionButtons(context),
-                        SizedBox(height: 24.h),
-                      ],
+          // Loaded state
+          else if (state is EditMarkerState) {
+            List<File> images =
+                state.newImages.map((file) => File(file.path)).toList();
+            return SingleChildScrollView(
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    const Header(headerText: 'Edit Marker'),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 32.w),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(height: 24.h),
+                          _buildFormFields(context, state, images),
+                          SizedBox(height: 32.h),
+                          _buildActionButtons(context),
+                          SizedBox(height: 24.h),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          );
+            );
+          }
+          // Fallback
+          return const Center(child: CircularProgressIndicator());
         },
       ),
     );
@@ -218,7 +275,7 @@ class EditMarkerView extends StatelessWidget {
   Widget _buildFormFields(
       BuildContext context, HomeState state, List<File> images) {
     // Collect network images from the original marker
-    final List<String> networkImages = location.images
+    final List<String> networkImages = widget.location.images
         .map<String>((img) {
           if (img is Map<String, dynamic>) {
             return img['image_path'] != null
@@ -251,9 +308,46 @@ class EditMarkerView extends StatelessWidget {
           child: _buildAspectDropdown(context, state),
         ),
         SizedBox(height: 16.h),
-        _buildSubAspectDropdown(context, state),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 18),
+          child: DropDownSubAspect(
+            key: ValueKey(
+                'subaspect_${(state is EditMarkerState) ? state.subAspects.length : 0}_${(state is EditMarkerState) ? state.selectedSubAspect : 'null'}'),
+            value: (state is EditMarkerState) ? state.selectedSubAspect : null,
+            onChanged: (selectedId) {
+              if (selectedId != null) {
+                context
+                    .read<HomeBloc>()
+                    .add(SelectEditSubAspectEvent(selectedId));
+                context.read<HomeBloc>().add(FetchCategoriesEvent(selectedId));
+              }
+            },
+            isLoading:
+                (state is EditMarkerState) ? state.isLoadingSubAspects : false,
+            error: (state is EditMarkerState) ? state.subAspectsError : null,
+            items: (state is EditMarkerState) ? state.subAspects : [],
+          ),
+        ),
         SizedBox(height: 16.h),
-        _buildCategoryDropdown(context, state),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 18),
+          child: DropDownCategory(
+            key: ValueKey(
+                'category_${(state is EditMarkerState) ? state.categories.length : 0}_${(state is EditMarkerState) ? state.selectedCategory : 'null'}'),
+            value: (state is EditMarkerState) ? state.selectedCategory : null,
+            onChanged: (selectedId) {
+              if (selectedId != null) {
+                context
+                    .read<HomeBloc>()
+                    .add(SelectEditCategoryEvent(selectedId));
+              }
+            },
+            isLoading:
+                (state is EditMarkerState) ? state.isLoadingCategories : false,
+            error: (state is EditMarkerState) ? state.categoriesError : null,
+            items: (state is EditMarkerState) ? state.categories : [],
+          ),
+        ),
         SizedBox(height: 16.h),
         _buildInputField(
           controller: _descriptionController,
@@ -294,44 +388,18 @@ class EditMarkerView extends StatelessWidget {
 
   Widget _buildAspectDropdown(BuildContext context, HomeState state) {
     return DropDownAspect(
+      key: ValueKey(
+          'aspect_${(state is EditMarkerState) ? state.aspects.length : 0}_${(state is EditMarkerState) ? state.selectedAspect : 'null'}'),
       value: (state is EditMarkerState) ? state.selectedAspect : null,
-      onChanged: (value) {
-        if (value != null) {
-          context.read<HomeBloc>().add(SelectEditAspectEvent(value));
+      onChanged: (selectedId) {
+        if (selectedId != null) {
+          context.read<HomeBloc>().add(SelectEditAspectEvent(selectedId));
+          context.read<HomeBloc>().add(FetchSubAspectsEvent(selectedId));
         }
       },
-    );
-  }
-
-  Widget _buildSubAspectDropdown(BuildContext context, HomeState state) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: DropDownSubAspect(
-        value: (state is EditMarkerState) ? state.selectedSubAspect : null,
-        selectedAspect:
-            (state is EditMarkerState) ? state.selectedAspect : null,
-        onChanged: (value) {
-          if (value != null) {
-            context.read<HomeBloc>().add(SelectEditSubAspectEvent(value));
-          }
-        },
-      ),
-    );
-  }
-
-  Widget _buildCategoryDropdown(BuildContext context, HomeState state) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: DropDownCategory(
-        value: (state is EditMarkerState) ? state.selectedCategory : null,
-        selectedSubAspect:
-            (state is EditMarkerState) ? state.selectedSubAspect : null,
-        onChanged: (value) {
-          if (value != null) {
-            context.read<HomeBloc>().add(SelectEditCategoryEvent(value));
-          }
-        },
-      ),
+      isLoading: (state is EditMarkerState) ? state.isLoadingAspects : false,
+      error: (state is EditMarkerState) ? state.aspectsError : null,
+      items: (state is EditMarkerState) ? state.aspects : [],
     );
   }
 
@@ -484,7 +552,7 @@ class EditMarkerView extends StatelessWidget {
             onPressed: () {
               context
                   .read<HomeBloc>()
-                  .add(FetchLocationDetailsEvent(location.id));
+                  .add(FetchLocationDetailsEvent(widget.location.id));
               context.pop();
             },
             text: 'Cancel',

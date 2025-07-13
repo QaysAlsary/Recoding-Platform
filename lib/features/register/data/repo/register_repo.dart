@@ -2,6 +2,11 @@ import 'package:dio/dio.dart';
 
 import 'package:recoding_platform_project/features/register/data/models/register_response_model.dart';
 
+<<<<<<< HEAD
+=======
+import '../../../../src/core/api/end_ponits.dart';
+
+>>>>>>> qays
 class RegisterRepository {
   final Dio _dio;
 
@@ -11,7 +16,11 @@ class RegisterRepository {
       String password_confirmation, String layer) async {
     try {
       final response = await _dio.post(
+<<<<<<< HEAD
         'http://192.168.239.150:8000/api/register',
+=======
+        EndPoint.baseUrl + EndPoint.register,
+>>>>>>> qays
         data: {
           "name": name,
           "email": email,
