@@ -15,13 +15,12 @@ class SearchBarWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-        margin: const EdgeInsets.all(16),
-        padding: const EdgeInsets.symmetric(horizontal: 12),
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey,width: 1),
+        border: Border.all(color: Colors.grey, width: 1),
         color: Colors.white.withOpacity(0.37),
         borderRadius: BorderRadius.circular(100),
-
       ),
       child: Row(
         children: [
@@ -29,13 +28,15 @@ class SearchBarWidget extends StatelessWidget {
           6.horizontalSpace,
           Expanded(
             child: TextField(
-
               cursorColor: AppColors.blue,
               controller: controller,
               onChanged: onChanged,
-              decoration:  InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'Search',
-                hintStyle: Theme.of(context).textTheme.labelMedium?.copyWith(fontSize: 13.sp,letterSpacing: 0.05),
+                hintStyle: Theme.of(context)
+                    .textTheme
+                    .labelMedium
+                    ?.copyWith(fontSize: 13.sp, letterSpacing: 0.05),
                 border: InputBorder.none,
               ),
             ),

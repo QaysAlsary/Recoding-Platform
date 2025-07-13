@@ -1,31 +1,100 @@
-import 'package:bloc/bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:recoding_platform_project/features/home/models/aspect_model.dart';
+import 'package:recoding_platform_project/features/home/models/category_model.dart';
 import 'package:recoding_platform_project/features/home/models/marker_model.dart';
 import 'package:recoding_platform_project/features/home/models/repo/home_repo.dart';
+import 'package:recoding_platform_project/features/home/models/sub_aspect_model.dart';
 import 'package:recoding_platform_project/src/core/errors/exceptions.dart';
 import '../models/location_model.dart';
 import 'dart:io';
+import 'package:dartz/dartz.dart';
 
 part 'home_event.dart';
 part 'home_state.dart';
 
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final HomeRepo homeRepo;
+
+  // Global lists for lookup
+  List<AspectModel2> allAspects = [];
+  List<SubAspectModel> allSubAspects = [];
+  List<CategoryModel> allCategories = [];
+
+  // Helper methods for lookup
+  String? getAspectNameById(int id) {
+    try {
+      return allAspects.firstWhere((a) => a.id == id).name;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String? getSubAspectNameById(int id) {
+    try {
+      return allSubAspects.firstWhere((s) => s.id == id).name;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String? getCategoryNameById(int id) {
+    try {
+      return allCategories.firstWhere((c) => c.id == id).name;
+    } catch (_) {
+      return null;
+    }
+  }
+
   HomeBloc({required this.homeRepo}) : super(const HomeInitial()) {
     on<FetchLocationDetailsEvent>(_fetchLocationDetailsEvent);
     on<DeleteMarkerEvent>(_deleteMarkerEvent);
     on<EditMarkerEvent>(_editMarkerEvent);
     on<CreateMarkerEvent>(_createMarkerEvent);
+    on<FetchFilteredMarkerByCategoryAndName>(
+        _fetchFilteredMarkerByCategoryAndName);
     on<FetchAllMarkersEvent>(_fetchAllMarkersEvent);
+    on<ExtractCategoriesFromMarkersEvent>(_extractCategoriesFromMarkersEvent);
+    on<ToggleCategorySelectionEvent>(_toggleCategorySelectionEvent);
+    on<FilterMarkersByCategoriesAndNames>(_filterMarkersByCategoriesAndNames);
+
     on<ToggleMenuEvent>((event, emit) {
       final current = _getCurrentMenuState();
+      final newState = current.copyWith(
+        openMenuLabel:
+            current.openMenuLabel == event.label ? null : event.label,
+      );
+      emit(newState);
 
+      // If opening the menu, extract aspects/subaspects from current markers
+      if (newState.openMenuLabel != null) {
+        _extractAspectSubaspectMap(emit);
+      }
+    });
+
+    on<CloseMenuEvent>((event, emit) {
+      final current = _getCurrentMenuState();
+      emit(current.copyWith(openMenuLabel: null));
+    });
+
+    on<ClearFiltersEvent>((event, emit) {
+      final current = _getCurrentMenuState();
       emit(current.copyWith(
-        openMenuLabel: current.openMenuLabel == event.label ? null : event.label,
+        selectedCategories: [],
+        filteredMarkers: [],
+        searchName: '',
+        openMenuLabel: null,
+        searchFilteredMarkers: [],
+        layerFilteredMarkers: [],
       ));
+    });
+
+    on<UpdateSearchNameEvent>((event, emit) {
+      final current = _getCurrentMenuState();
+      emit(current.copyWith(searchName: event.searchName));
     });
 
     // Handle dropdown category selection
@@ -49,8 +118,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       final current = _getCurrentMenuState();
 
       emit(current.copyWith(
-        selectedSubAspect: event.subAspect,
-      ));
+          selectedSubAspect: event.subAspect, selectedCategory: null));
     });
 
     on<MapTappedEvent>((event, emit) {
@@ -92,32 +160,34 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       final current = state is EditMarkerState
           ? state as EditMarkerState
           : const EditMarkerState();
-      print("aspectid: ${event.aspect}");
-
       emit(current.copyWith(
-        selectedAspect: event.aspect,
-        selectedSubAspect: null,
-        selectedCategory: null,
-      ));
+          selectedAspect: event.aspect,
+          selectedSubAspect: null,
+          selectedCategory: null,
+          subAspects: [],
+          categories: []
+
+          // Do NOT reset subAspects or categories here!
+          ));
     });
 
     on<SelectEditSubAspectEvent>((event, emit) {
       final current = state is EditMarkerState
           ? state as EditMarkerState
           : const EditMarkerState();
-      print("subaspecid: ${event.subAspect}");
       emit(current.copyWith(
-        selectedSubAspect: event.subAspect,
-        selectedCategory: null,
-      ));
+          selectedSubAspect: event.subAspect,
+          selectedCategory: null,
+          categories: []
+          // Do NOT reset categories here!
+          ));
     });
 
     on<SelectEditCategoryEvent>((event, emit) {
       final current = state is EditMarkerState
           ? state as EditMarkerState
           : const EditMarkerState();
-      print("catid: ${event.category}");
-
+      print('SelectEditCategoryEvent: category=${event.category}');
       emit(current.copyWith(selectedCategory: event.category));
     });
 
@@ -152,7 +222,10 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           : const CreateMarkerFormState();
       emit(current.copyWith(
         selectedAspect: event.aspect,
-        selectedSubAspect: null, // Reset sub-aspect when aspect changes
+        selectedSubAspect: null,
+        selectedCategory: null,
+        subAspects: [],
+        categories: [],
       ));
     });
 
@@ -162,7 +235,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           : const CreateMarkerFormState();
       emit(current.copyWith(
         selectedSubAspect: event.subAspect,
-        selectedCategory: null, // Reset only category
+        selectedCategory: null,
+        categories: [],
       ));
     });
 
@@ -175,29 +249,324 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
     on<InitEditMarkerEvent>((event, emit) {
       emit(EditMarkerState(
-          selectedAspect: event.aspect,
-          selectedSubAspect: event.subAspect,
-          selectedCategory: event.category,
-          newImages: event.newImages,
-          name: event.name));
+        selectedAspect: event.aspect,
+        selectedSubAspect: event.subAspect,
+        selectedCategory: event.category,
+        newImages: event.newImages,
+        name: event.name,
+        aspects: [],
+        subAspects: [],
+        categories: [],
+        isLoadingAspects: false,
+        isLoadingSubAspects: false,
+        isLoadingCategories: false,
+        aspectsError: null,
+        subAspectsError: null,
+        categoriesError: null,
+      ));
+    });
+
+    on<InitCreateMarkerEvent>((event, emit) {
+      emit(const CreateMarkerFormState());
+    });
+
+    on<FetchAspectsEvent>((event, emit) async {
+      final current = state is EditMarkerState
+          ? state as EditMarkerState
+          : state is CreateMarkerFormState
+              ? state as CreateMarkerFormState
+              : null;
+      if (current == null) {
+        emit(const EditMarkerState(isLoadingAspects: true));
+      } else if (current is EditMarkerState) {
+        emit(current.copyWith(isLoadingAspects: true, aspectsError: null));
+      } else if (current is CreateMarkerFormState) {
+        emit(current.copyWith(isLoadingAspects: true, aspectsError: null));
+      }
+      final result = await homeRepo.getAllAspects();
+      result.fold(
+        (error) => emit((current is EditMarkerState
+            ? current.copyWith(isLoadingAspects: false, aspectsError: error)
+            : current is CreateMarkerFormState
+                ? current.copyWith(isLoadingAspects: false, aspectsError: error)
+                : EditMarkerState(
+                    isLoadingAspects: false, aspectsError: error))),
+        (aspects) {
+          allAspects = aspects;
+          emit((current is EditMarkerState
+              ? current.copyWith(
+                  isLoadingAspects: false, aspects: aspects, aspectsError: null)
+              : current is CreateMarkerFormState
+                  ? current.copyWith(
+                      isLoadingAspects: false,
+                      aspects: aspects,
+                      aspectsError: null)
+                  : EditMarkerState(
+                      isLoadingAspects: false,
+                      aspects: aspects,
+                      aspectsError: null)));
+        },
+      );
+    });
+
+    on<FetchSubAspectsEvent>((event, emit) async {
+      final current = state is EditMarkerState
+          ? state as EditMarkerState
+          : state is CreateMarkerFormState
+              ? state as CreateMarkerFormState
+              : null;
+      if (current == null) {
+        emit(EditMarkerState(isLoadingSubAspects: true));
+      } else if (current is EditMarkerState) {
+        emit(current.copyWith(
+            isLoadingSubAspects: true,
+            subAspectsError: null,
+            subAspects: [],
+            selectedSubAspect: null,
+            selectedCategory: null,
+            categories: []));
+      } else if (current is CreateMarkerFormState) {
+        emit(current.copyWith(
+            isLoadingSubAspects: true,
+            subAspectsError: null,
+            subAspects: [],
+            selectedSubAspect: null,
+            selectedCategory: null,
+            categories: []));
+      }
+      final result = await homeRepo.getSubAspectsForAspect(event.aspectId);
+      result.fold(
+        (error) => emit((current is EditMarkerState
+            ? current.copyWith(
+                isLoadingSubAspects: false, subAspectsError: error)
+            : current is CreateMarkerFormState
+                ? current.copyWith(
+                    isLoadingSubAspects: false, subAspectsError: error)
+                : EditMarkerState(
+                    isLoadingSubAspects: false, subAspectsError: error))),
+        (subAspects) {
+          allSubAspects = [
+            ...allSubAspects.where((s) => s.aspectId != event.aspectId),
+            ...subAspects
+          ];
+          emit((current is EditMarkerState
+              ? current.copyWith(
+                  isLoadingSubAspects: false,
+                  subAspects: subAspects,
+                  subAspectsError: null)
+              : current is CreateMarkerFormState
+                  ? current.copyWith(
+                      isLoadingSubAspects: false,
+                      subAspects: subAspects,
+                      subAspectsError: null)
+                  : EditMarkerState(
+                      isLoadingSubAspects: false,
+                      subAspects: subAspects,
+                      subAspectsError: null)));
+        },
+      );
+    });
+
+    on<FetchCategoriesEvent>((event, emit) async {
+      final current = state is EditMarkerState
+          ? state as EditMarkerState
+          : state is CreateMarkerFormState
+              ? state as CreateMarkerFormState
+              : null;
+      if (current == null) {
+        emit(EditMarkerState(isLoadingCategories: true));
+      } else if (current is EditMarkerState) {
+        emit(current.copyWith(
+            isLoadingCategories: true,
+            categoriesError: null,
+            categories: [],
+            selectedCategory: null));
+      } else if (current is CreateMarkerFormState) {
+        emit(current.copyWith(
+            isLoadingCategories: true,
+            categoriesError: null,
+            categories: [],
+            selectedCategory: null));
+      }
+      final result =
+          await homeRepo.getCategoriesForSubAspect(event.subAspectId);
+      result.fold(
+        (error) => emit((current is EditMarkerState
+            ? current.copyWith(
+                isLoadingCategories: false, categoriesError: error)
+            : current is CreateMarkerFormState
+                ? current.copyWith(
+                    isLoadingCategories: false, categoriesError: error)
+                : EditMarkerState(
+                    isLoadingCategories: false, categoriesError: error))),
+        (categories) {
+          allCategories = [
+            ...allCategories.where((c) => c.subAspectId != event.subAspectId),
+            ...categories
+          ];
+          emit((current is EditMarkerState
+              ? current.copyWith(
+                  isLoadingCategories: false,
+                  categories: categories,
+                  categoriesError: null)
+              : current is CreateMarkerFormState
+                  ? current.copyWith(
+                      isLoadingCategories: false,
+                      categories: categories,
+                      categoriesError: null)
+                  : EditMarkerState(
+                      isLoadingCategories: false,
+                      categories: categories,
+                      categoriesError: null)));
+        },
+      );
+    });
+
+    // Single handler for FetchAllMarkersEvent:
+    on<FetchFilteredMarkerByAspectAndSubAspect>((event, emit) async {
+      final current = _getCurrentMenuState();
+      emit(current.copyWith(isLoadingMarkers: true, markersError: null));
+      final result = await homeRepo.getAllMarkers();
+      result.fold(
+        (error) => emit(
+            current.copyWith(isLoadingMarkers: false, markersError: error)),
+        (markers) {
+          emit(current.copyWith(
+              isLoadingMarkers: false,
+              allMarkers: markers,
+              markersError: null));
+          add(const ExtractCategoriesFromMarkersEvent());
+          // Extract aspect-subaspect map
+          _extractAspectSubaspectMap(emit);
+        },
+      );
+    });
+
+    // Toggle aspect selection
+    on<ToggleAspectSelectionEvent>((event, emit) {
+      final current = _getCurrentMenuState();
+      final selected = List<String>.from(current.selectedAspects);
+      if (selected.contains(event.aspect)) {
+        selected.remove(event.aspect);
+      } else {
+        selected.add(event.aspect);
+      }
+      // Always reset subaspects when aspects change
+      _onFilterChanged(emit, current,
+          selectedAspects: selected, selectedSubaspects: []);
+    });
+
+    // Toggle subaspect selection
+    on<ToggleSubaspectSelectionEvent>((event, emit) {
+      final current = _getCurrentMenuState();
+      final selected = List<String>.from(current.selectedSubaspects);
+      if (selected.contains(event.subaspect)) {
+        selected.remove(event.subaspect);
+      } else {
+        selected.add(event.subaspect);
+      }
+      _onFilterChanged(emit, current, selectedSubaspects: selected);
+    });
+
+    // Filter markers by aspect and subaspect
+    on<FilterMarkersByAspectAndSubaspect>((event, emit) {
+      final current = _getCurrentMenuState();
+      final markers = current.allMarkers;
+      if (markers.isEmpty) {
+        emit(current.copyWith(filteredMarkers: []));
+        return;
+      }
+      final filtered = markers.where((marker) {
+        final aspectMatch =
+            event.aspects.isEmpty || event.aspects.contains(marker.aspect);
+        final subaspectMatch = event.subaspects.isEmpty ||
+            event.subaspects.contains(marker.subAspect);
+        return aspectMatch && subaspectMatch;
+      }).toList();
+      emit(current.copyWith(filteredMarkers: filtered));
+    });
+
+    // Clear aspect/subaspect filters
+    on<ClearAspectSubaspectFiltersEvent>((event, emit) {
+      final current = _getCurrentMenuState();
+      emit(current.copyWith(
+          selectedAspects: [],
+          selectedSubaspects: [],
+          filteredMarkers: [],
+          layerFilteredMarkers: []));
+    });
+
+    on<SelectFilterAspectEvent>((event, emit) {
+      final current = _getCurrentMenuState();
+      emit(current.copyWith(
+        selectedAspects: [event.aspectName],
+        selectedSubaspects: [], // Clear subaspects when aspect changes
+      ));
+    });
+
+    on<SelectFilterSubAspectEvent>((event, emit) {
+      final current = _getCurrentMenuState();
+      emit(current.copyWith(
+        selectedSubaspects: [event.subAspectName],
+      ));
     });
   }
 
   Future<void> _fetchLocationDetailsEvent(
-      FetchLocationDetailsEvent event,
-      Emitter<HomeState> emit,
-      ) async {
-    final current = _getCurrentMenuState();
-    emit(current.copyWith(isLoadingDetails: true));
+    FetchLocationDetailsEvent event,
+    Emitter<HomeState> emit,
+  ) async {
+    emit(const LocationLoading());
     final result = await homeRepo.getSelectedMarker(id: event.locationId);
-    result.fold(
-          (err) => emit(current.copyWith(isLoadingDetails: false, detailsError: err)),
-          (location) => emit(current.copyWith(
-        isLoadingDetails: false,
-        selectedLocation: location.location,
-      )),
+    await result.fold(
+      (err) async {
+        emit(LocationError(err));
+      },
+      (Location) async {
+        // Fetch all data in parallel
+        final aspectsFuture = homeRepo.getAllAspects();
+        final subAspectsFuture = Location.location.aspectId != null
+            ? homeRepo.getSubAspectsForAspect(Location.location.aspectId!)
+            : Future.value(Right(<SubAspectModel>[])
+                as Either<String, List<SubAspectModel>>);
+        final categoriesFuture = Location.location.subAspectId != null
+            ? homeRepo.getCategoriesForSubAspect(Location.location.subAspectId!)
+            : Future.value(Right(<CategoryModel>[])
+                as Either<String, List<CategoryModel>>);
+
+        // Wait for all to complete
+        final aspectsResult = await aspectsFuture;
+        final subAspectsResult = await subAspectsFuture;
+        final categoriesResult = await categoriesFuture;
+
+        // Extract data or handle errors
+        final aspects = aspectsResult.fold((_) => <AspectModel2>[], (a) => a);
+        final subAspects =
+            subAspectsResult.fold((_) => <SubAspectModel>[], (s) => s);
+        final categories =
+            categoriesResult.fold((_) => <CategoryModel>[], (c) => c);
+
+        // Optionally update global lists
+        allAspects = aspects;
+        allSubAspects = subAspects;
+        allCategories = categories;
+
+        emit(EditMarkerState(
+          location: Location.location,
+          selectedAspect: Location.location.aspectId,
+          selectedSubAspect: Location.location.subAspectId,
+          selectedCategory: Location.location.categoryId,
+          isLoadingAspects: false,
+          isLoadingSubAspects: false,
+          isLoadingCategories: false,
+          aspects: aspects,
+          subAspects: subAspects,
+          categories: categories,
+        ));
+      },
     );
   }
+
   Future<void> _deleteMarkerEvent(
     DeleteMarkerEvent event,
     Emitter<HomeState> emit,
@@ -221,9 +590,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       locationId: event.locationId,
       name: event.name,
       description: event.description,
-      aspect: event.aspect.toString(),
-      subAspect: event.subAspect.toString(),
-      category: event.category.toString(),
+      aspect: event.aspect,
+      subAspect: event.subAspect,
+      category: event.category,
       newImages: event.newImages,
     );
 
@@ -298,6 +667,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       emit(currentState);
     }
   }
+
   MenuState _getCurrentMenuState() {
     if (state is MenuState) {
       return state as MenuState;
@@ -305,11 +675,35 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     return const MenuState();
   }
 
+  // Extract aspect-subaspect map from all markers
+  void _extractAspectSubaspectMap(Emitter<HomeState> emit) {
+    final current = _getCurrentMenuState();
+    final markers = current.allMarkers;
+    final Map<String, Set<String>> aspectMap = {};
+    for (final marker in markers) {
+      final aspect = marker.aspect;
+      final subaspect = marker.subAspect;
+      if (aspect.isNotEmpty) {
+        aspectMap.putIfAbsent(aspect, () => <String>{});
+        if (subaspect.isNotEmpty) {
+          aspectMap[aspect]!.add(subaspect);
+        }
+      }
+    }
+    // Convert sets to lists
+    final Map<String, List<String>> aspectSubaspectMap = {
+      for (var entry in aspectMap.entries)
+        entry.key: entry.value.toList()..sort(),
+    };
+    emit(current.copyWith(aspectSubaspectMap: aspectSubaspectMap));
+  }
+
 // Updated fetch markers method
+
   Future<void> _fetchAllMarkersEvent(
-      FetchAllMarkersEvent event,
-      Emitter<HomeState> emit,
-      ) async {
+    FetchAllMarkersEvent event,
+    Emitter<HomeState> emit,
+  ) async {
     final current = _getCurrentMenuState();
 
     // Set loading state
@@ -321,17 +715,192 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     final result = await homeRepo.getAllMarkers();
 
     result.fold(
-          (error) => emit(current.copyWith(
+      (error) => emit(current.copyWith(
         isLoadingMarkers: false,
         markersError: error,
       )),
-          (markers) => emit(current.copyWith(
-        isLoadingMarkers: false,
-        allMarkers: markers,
-        markersError: null,
-      )),
+      (markers) {
+        // After successfully fetching markers, extract categories from them
+        emit(current.copyWith(
+          isLoadingMarkers: false,
+          allMarkers: markers,
+          markersError: null,
+        ));
+
+        // Extract categories from the newly fetched markers
+        add(const ExtractCategoriesFromMarkersEvent());
+
+        // Also extract aspects and subaspects from the newly fetched markers
+        _extractAspectSubaspectMap(emit);
+      },
     );
   }
+
+  // Helper function to extract unique categories from markers
+  List<String> _extractCategoriesFromMarkers(List<MarkerData> markers) {
+    final Set<String> uniqueCategories = {};
+    for (var marker in markers) {
+      if (marker.category.isNotEmpty) {
+        uniqueCategories.add(marker.category);
+      }
+    }
+    return uniqueCategories.toList();
+  }
+
+  // Helper function to filter markers by categories and name
+  List<MarkerData> _filterMarkersByCategoriesAndName(
+    List<MarkerData> markers,
+    List<String> selectedCategories,
+    String? searchName,
+  ) {
+    return markers.where((marker) {
+      // Check category filter
+      final categoryMatch = selectedCategories.isEmpty ||
+          selectedCategories.contains(marker.category);
+
+      // Check name filter
+      final nameMatch = searchName == null ||
+          searchName.isEmpty ||
+          marker.name.toLowerCase().contains(searchName.toLowerCase());
+
+      return categoryMatch && nameMatch;
+    }).toList();
+  }
+
+  // Helper to intersect two marker lists by id
+  List<MarkerData> _intersectMarkers(List<MarkerData> a, List<MarkerData> b) {
+    if (a.isEmpty) return b;
+    if (b.isEmpty) return a;
+    final bIds = b.map((m) => m.id).toSet();
+    return a.where((m) => bIds.contains(m.id)).toList();
+  }
+
+  Future<void> _fetchFilteredMarkerByCategoryAndName(
+    FetchFilteredMarkerByCategoryAndName event,
+    Emitter<HomeState> emit,
+  ) async {
+    final current = _getCurrentMenuState();
+    emit(current.copyWith(isLoadingMarkers: true, markersError: null));
+    final result = await homeRepo.getAllMarkers();
+    result.fold(
+      (error) =>
+          emit(current.copyWith(isLoadingMarkers: false, markersError: error)),
+      (markers) {
+        emit(current.copyWith(
+            isLoadingMarkers: false, allMarkers: markers, markersError: null));
+        // Now extract categories from the newly fetched markers
+        add(const ExtractCategoriesFromMarkersEvent());
+        // You can add your filtering logic here if needed
+      },
+    );
+  }
+
+  Future<void> _extractCategoriesFromMarkersEvent(
+    ExtractCategoriesFromMarkersEvent event,
+    Emitter<HomeState> emit,
+  ) async {
+    final current = _getCurrentMenuState();
+    final markers = current.allMarkers;
+
+    if (markers.isEmpty) {
+      emit(current.copyWith(availableCategories: []));
+      return;
+    }
+
+    final categories = _extractCategoriesFromMarkers(markers);
+    emit(current.copyWith(availableCategories: categories));
+  }
+
+  Future<void> _toggleCategorySelectionEvent(
+    ToggleCategorySelectionEvent event,
+    Emitter<HomeState> emit,
+  ) async {
+    final current = _getCurrentMenuState();
+    final currentSelected = List<String>.from(current.selectedCategories);
+
+    if (currentSelected.contains(event.category)) {
+      currentSelected.remove(event.category);
+    } else {
+      currentSelected.add(event.category);
+    }
+
+    emit(current.copyWith(selectedCategories: currentSelected));
+    // Immediately filter markers by updated categories and current searchName
+    add(FilterMarkersByCategoriesAndNames(
+      selectedCategories: currentSelected,
+      searchName: current.searchName,
+    ));
+  }
+
+  Future<void> _filterMarkersByCategoriesAndNames(
+    FilterMarkersByCategoriesAndNames event,
+    Emitter<HomeState> emit,
+  ) async {
+    final current = _getCurrentMenuState();
+    final markers = current.allMarkers;
+
+    if (markers.isEmpty) {
+      emit(current.copyWith(
+          searchFilteredMarkers: [],
+          filteredMarkers:
+              _intersectMarkers([], current.layerFilteredMarkers)));
+      return;
+    }
+
+    final filteredMarkers = _filterMarkersByCategoriesAndName(
+      markers,
+      event.selectedCategories,
+      event.searchName,
+    );
+    final intersection =
+        _intersectMarkers(filteredMarkers, current.layerFilteredMarkers);
+    emit(current.copyWith(
+        searchFilteredMarkers: filteredMarkers, filteredMarkers: intersection));
+  }
+
+  void _onFilterChanged(
+    Emitter<HomeState> emit,
+    MenuState current, {
+    List<String>? selectedAspects,
+    List<String>? selectedSubaspects,
+    List<String>? selectedCategories,
+    String? searchName,
+  }) {
+    final aspectMap = current.aspectSubaspectMap;
+    final aspects = selectedAspects ?? current.selectedAspects;
+    final subaspects = selectedSubaspects ?? current.selectedSubaspects;
+    final categories = selectedCategories ?? current.selectedCategories;
+    final name = searchName ?? current.searchName;
+
+    // Compute available subaspects
+    final availableSubaspects = aspects
+        .expand((aspect) => aspectMap[aspect] ?? [])
+        .toSet()
+        .toList()
+        .cast<String>()
+      ..sort();
+    // Remove subaspects that are no longer available
+    final filteredSelectedSubaspects =
+        subaspects.where((s) => availableSubaspects.contains(s)).toList();
+
+    // Filter markers by all active filters
+    final filtered = current.allMarkers.where((marker) {
+      final nameMatch = name.isEmpty ||
+          marker.name.toLowerCase().contains(name.toLowerCase());
+      final categoryMatch =
+          categories.isEmpty || categories.contains(marker.category);
+      final aspectMatch = aspects.isEmpty || aspects.contains(marker.aspect);
+      final subaspectMatch = filteredSelectedSubaspects.isEmpty ||
+          filteredSelectedSubaspects.contains(marker.subAspect);
+      return nameMatch && categoryMatch && aspectMatch && subaspectMatch;
+    }).toList();
+
+    emit(current.copyWith(
+      selectedAspects: aspects,
+      selectedSubaspects: filteredSelectedSubaspects,
+      selectedCategories: categories,
+      searchName: name,
+      filteredMarkers: filtered,
+    ));
+  }
 }
-
-

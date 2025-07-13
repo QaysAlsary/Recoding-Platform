@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:recoding_platform_project/features/home/models/aspect_model.dart';
 import 'package:recoding_platform_project/features/home/models/location_model.dart';
 import 'package:recoding_platform_project/features/home/models/marker_model.dart';
 import 'package:recoding_platform_project/src/core/api/api_consumer.dart';
@@ -7,6 +8,8 @@ import 'package:recoding_platform_project/src/core/api/end_ponits.dart';
 import 'package:recoding_platform_project/src/core/errors/exceptions.dart';
 import 'package:dio/dio.dart';
 import 'package:http_parser/http_parser.dart';
+import '../sub_aspect_model.dart';
+import '../category_model.dart';
 
 class HomeRepo {
   final ApiConsumer api;
@@ -44,9 +47,9 @@ class HomeRepo {
     required int locationId,
     required String name,
     required String description,
-    required String? aspect,
-    required String? subAspect,
-    required String? category,
+    required int? aspect,
+    required int? subAspect,
+    required int? category,
     List<XFile>? newImages,
   }) async {
     try {
@@ -98,9 +101,9 @@ class HomeRepo {
 
   Future<Either<String, String>> createMarker({
     required String name,
-    String? aspectId,
-    String? subAspectId,
-    String? categoryId,
+    int? aspectId,
+    int? subAspectId,
+    int? categoryId,
     required double latitude,
     required double longitude,
     String? description,
@@ -155,10 +158,10 @@ class HomeRepo {
       );
 
       // Assuming the response is a list of markers
-      final List<dynamic> markersJson = response is List ? response : response['data'];
-      final List<MarkerData> markers = markersJson
-          .map((json) => MarkerData.fromJson(json))
-          .toList();
+      final List<dynamic> markersJson =
+          response is List ? response : response['data'];
+      final List<MarkerData> markers =
+          markersJson.map((json) => MarkerData.fromJson(json)).toList();
 
       return Right(markers);
     } on ServerException catch (e) {
@@ -169,6 +172,66 @@ class HomeRepo {
     } catch (e) {
       print('Error fetching markers: $e');
       return Left('Failed to fetch markers: ${e.toString()}');
+    }
+  }
+
+  Future<Either<String, List<AspectModel2>>> getAllAspects() async {
+    try {
+      final response = await api.get(
+        EndPoint.baseUrl + EndPoint.getAspect,
+      );
+      final List<dynamic> data = response;
+      final aspects = data.map((e) => AspectModel2.fromJson(e)).toList();
+      return Right(aspects);
+    } on ServerException catch (e) {
+      final errorMessage =
+          e.errModel.errorMessage ?? 'An unknown server error occurred.';
+      print(errorMessage);
+      return Left(errorMessage);
+    } catch (e) {
+      print('Error fetching aspects: $e');
+      return Left('Failed to fetch aspects: ${e.toString()}');
+    }
+  }
+
+  Future<Either<String, List<SubAspectModel>>> getSubAspectsForAspect(
+      int aspectId) async {
+    try {
+      final response = await api.get(
+        EndPoint.baseUrl + 'sub-aspects/$aspectId',
+        // EndPoint.baseUrl + EndPoint.getSubAspect(aspectId),
+      );
+      final List<dynamic> data = response;
+      final subAspects = data.map((e) => SubAspectModel.fromJson(e)).toList();
+      return Right(subAspects);
+    } on ServerException catch (e) {
+      final errorMessage =
+          e.errModel.errorMessage ?? 'An unknown server error occurred.';
+      print(errorMessage);
+      return Left(errorMessage);
+    } catch (e) {
+      print('Error fetching sub-aspects: $e');
+      return Left('Failed to fetch sub-aspects: ${e.toString()}');
+    }
+  }
+
+  Future<Either<String, List<CategoryModel>>> getCategoriesForSubAspect(
+      int subAspectId) async {
+    try {
+      final response = await api.get(
+        EndPoint.baseUrl + 'categories/$subAspectId',
+      );
+      final List<dynamic> data = response;
+      final categories = data.map((e) => CategoryModel.fromJson(e)).toList();
+      return Right(categories);
+    } on ServerException catch (e) {
+      final errorMessage =
+          e.errModel.errorMessage ?? 'An unknown server error occurred.';
+      print(errorMessage);
+      return Left(errorMessage);
+    } catch (e) {
+      print('Error fetching categories: $e');
+      return Left('Failed to fetch categories: ${e.toString()}');
     }
   }
 }

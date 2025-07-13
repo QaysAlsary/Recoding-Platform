@@ -1,41 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:recoding_platform_project/features/home/models/aspect_model.dart';
+import 'package:recoding_platform_project/features/home/models/category_model.dart';
 import 'package:recoding_platform_project/src/themes/app_colors.dart';
 
 class DropDownCategory extends StatelessWidget {
   final int? value;
-  final int? selectedSubAspect;
-  final Function(int?) onChanged;
-
+  final void Function(int?)? onChanged;
+  final bool isLoading;
+  final String? error;
+  final List<CategoryModel> items;
   const DropDownCategory({
     super.key,
-    required this.value,
-    required this.selectedSubAspect,
+    this.value,
     required this.onChanged,
+    this.isLoading = false,
+    this.error,
+    this.items = const [],
   });
 
   @override
   Widget build(BuildContext context) {
-    final categories = selectedSubAspect != null
-        ? AspectData.getCategoriesForSubAspect(selectedSubAspect!)
-        : <Category>[];
     final validValue =
-        value != null && categories.any((c) => c.id == value) ? value : null;
+        value != null && items.any((c) => c.id == value) ? value : null;
+    if (error != null) {
+      return Text(error!);
+    }
     return DropdownButtonFormField<int>(
+      key: ValueKey('category_${items.length}_$validValue'),
       value: validValue,
+      isExpanded: true,
       dropdownColor: Colors.white,
-      icon: const Icon(
+      icon: Icon(
         Icons.keyboard_arrow_down_outlined,
         color: Color(0xff787878),
       ),
-      isExpanded: true,
       decoration: InputDecoration(
         hintText: 'Category',
-        hintStyle: Theme.of(context)
-            .textTheme
-            .labelMedium
-            ?.copyWith(fontSize: 16.r, fontWeight: FontWeight.w300),
+        hintStyle: Theme.of(context).textTheme.labelMedium,
         contentPadding: const EdgeInsets.symmetric(vertical: 12),
         border: const UnderlineInputBorder(
           borderSide: BorderSide(
@@ -64,8 +65,8 @@ class DropDownCategory extends StatelessWidget {
       style: Theme.of(context)
           .textTheme
           .labelMedium
-          ?.copyWith(fontSize: 16.sp, fontWeight: FontWeight.w300),
-      items: categories
+          ?.copyWith(fontSize: 16.sp, fontWeight: FontWeight.w400),
+      items: items
           .map((category) => DropdownMenuItem(
                 value: category.id,
                 child: Text(
@@ -75,7 +76,7 @@ class DropDownCategory extends StatelessWidget {
                 ),
               ))
           .toList(),
-      onChanged: selectedSubAspect != null ? onChanged : null,
+      onChanged: onChanged,
     );
   }
 }
