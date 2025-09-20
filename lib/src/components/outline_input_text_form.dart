@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../themes/app_colors.dart';
-import 'svg_icon_widget.dart';
 
 //Example for using it in a screen:
 //               InputTextFormField(
@@ -34,7 +33,7 @@ class OutlineInputTextForm extends StatelessWidget {
   final Function(String)? onChanged;
   final TextStyle? hintStyle;
 
-  OutlineInputTextForm(
+  const OutlineInputTextForm(
       {super.key,
       this.controller,
       this.decoration,

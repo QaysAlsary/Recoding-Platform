@@ -32,7 +32,7 @@ class InputTextFormFieldSvg extends StatelessWidget {
   final Function(String)? onChanged;
   final TextStyle? hintStyle;
 
-  InputTextFormFieldSvg(
+  const InputTextFormFieldSvg(
       {super.key,
       this.controller,
       this.decoration,

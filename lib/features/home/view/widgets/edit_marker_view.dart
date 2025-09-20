@@ -8,18 +8,18 @@ import 'package:recoding_platform_project/features/home/view/widgets/drop_down_c
 import 'dart:io';
 import 'package:recoding_platform_project/features/home/view/widgets/drop_down_sub_aspect.dart'
     hide DropDownCategory;
+import 'package:recoding_platform_project/features/home/view/widgets/edit_build_gallery.dart';
+import 'package:recoding_platform_project/features/home/view/widgets/edit_progress_indicator.dart';
 import 'package:recoding_platform_project/src/components/auth_button.dart';
 import 'package:recoding_platform_project/src/components/header.dart';
 import 'package:recoding_platform_project/src/components/input_text_form_field.dart';
 import 'package:recoding_platform_project/src/core/api/end_ponits.dart';
-import 'package:recoding_platform_project/src/di/service_locator.dart';
 import 'package:recoding_platform_project/src/routing/routes.dart';
-import 'package:recoding_platform_project/src/themes/app_colors.dart';
 import '../../bloc/home_bloc.dart';
 import '../../models/location_model.dart';
-import '../../models/aspect_model.dart';
-import 'package:latlong2/latlong.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/services.dart';
+import 'package:shimmer/shimmer.dart';
 
 class EditMarkerView extends StatefulWidget {
   final Location location;
@@ -75,28 +75,166 @@ class _EditMarkerViewState extends State<EditMarkerView> {
   // }
 
   Future<void> _handleImageSelection(BuildContext context) async {
+    HapticFeedback.selectionClick();
     final ImagePicker picker = ImagePicker();
-    final List<XFile> newImages = await picker.pickMultiImage();
-
-    if (newImages.isNotEmpty) {
-      final currentImages = (context.read<HomeBloc>().state is EditMarkerState)
-          ? (context.read<HomeBloc>().state as EditMarkerState)
+    final homeBloc = context.read<HomeBloc>();
+    final List<XFile> newImages =
+        await picker.pickMultiImage(imageQuality: 100);
+    // Filter only jpeg, jpg, png
+    final filteredImages = newImages.where((img) {
+      final ext = img.name.toLowerCase();
+      return ext.endsWith('.jpg') ||
+          ext.endsWith('.jpeg') ||
+          ext.endsWith('.png');
+    }).toList();
+    if (filteredImages.isNotEmpty && mounted) {
+      final currentImages = (homeBloc.state is EditMarkerState)
+          ? (homeBloc.state as EditMarkerState)
               .newImages
               .map((file) => XFile(file.path))
               .toList()
           : <XFile>[];
-
       final List<XFile> combinedImages = [
         ...currentImages,
-        ...newImages,
+        ...filteredImages,
       ];
-
-      context.read<HomeBloc>().add(UpdateEditMarkerImagesEvent(
-          combinedImages.map((x) => File(x.path)).toList()));
+      if (mounted) {
+        homeBloc.add(UpdateEditMarkerImagesEvent(
+            combinedImages.map((x) => File(x.path)).toList()));
+      }
     }
   }
 
+  Future<void> _handleFileSelection(BuildContext context) async {
+    HapticFeedback.selectionClick();
+    final homeBloc = context.read<HomeBloc>();
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf', 'txt'],
+      allowMultiple: true,
+    );
+    if (result != null && result.files.isNotEmpty && mounted) {
+      final currentFiles = (homeBloc.state is EditMarkerState)
+          ? (homeBloc.state as EditMarkerState)
+              .newPdfs
+              .map((file) => XFile(file.path))
+              .toList()
+          : <XFile>[];
+      final newFiles = result.files
+          .map((file) => XFile(file.path!, name: file.name))
+          .toList();
+      final updatedFiles = [...currentFiles, ...newFiles];
+      if (mounted) {
+        homeBloc.add(UpdateEditMarkerPdfsEvent(
+            updatedFiles.map((x) => File(x.path)).toList()));
+      }
+    }
+  }
+
+  Widget _buildImageUploadField(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _showFileTypeDialog(context),
+      child: InputTextFormField(
+        hintText: 'Upload files',
+        hintStyle: TextStyle(color: Color(0xff787878), fontSize: 16.sp),
+        enabled: false,
+        prefixIcon: const Icon(Icons.upload_file, color: Color(0xff787878)),
+        suffixIcon: const Icon(Icons.upload, color: Color(0xff787878)),
+      ),
+    );
+  }
+
+  void _showFileTypeDialog(BuildContext context) {
+    HapticFeedback.selectionClick();
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Card(
+            color: Colors.white,
+            elevation: 8,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20.r),
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(20.w),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Select File Type',
+                    style: TextStyle(
+                      fontSize: 20.sp,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  SizedBox(height: 20.h),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade50,
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: ListTile(
+                      leading: Icon(
+                        Icons.image_outlined,
+                        color: const Color(0xff6ab3d9),
+                        size: 24.sp,
+                      ),
+                      title: Text(
+                        'Images (jpeg, jpg, png)',
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black,
+                        ),
+                      ),
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        Navigator.of(context).pop();
+                        _handleImageSelection(context);
+                      },
+                    ),
+                  ),
+                  SizedBox(height: 12.h),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade50,
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: ListTile(
+                      leading: Icon(
+                        Icons.insert_drive_file,
+                        color: const Color(0xff6ab3d9),
+                        size: 24.sp,
+                      ),
+                      title: Text(
+                        'Files (pdf, txt)',
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black,
+                        ),
+                      ),
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        Navigator.of(context).pop();
+                        _handleFileSelection(context);
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   void _handleSave(BuildContext context) {
+    HapticFeedback.mediumImpact();
     if (_formKey.currentState!.validate()) {
       _showConfirmationDialog(context);
     }
@@ -110,52 +248,97 @@ class _EditMarkerViewState extends State<EditMarkerView> {
   }
 
   Widget _buildConfirmationDialog(BuildContext context) {
-    return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16.r),
-      ),
-      title: Text(
-        'Confirm Changes',
-        style: TextStyle(
-          fontSize: 20.sp,
-          fontWeight: FontWeight.bold,
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      child: Card(
+        color: Colors.white,
+        elevation: 8,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.r),
         ),
-      ),
-      content: Text(
-        'Are you sure you want to save these changes?',
-        style: TextStyle(fontSize: 16.sp),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => context.pop(),
-          child: Text(
-            'Cancel',
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 16.sp,
-            ),
+        child: Padding(
+          padding: EdgeInsets.all(20.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.save_outlined,
+                size: 48.sp,
+                color: const Color(0xff6ab3d9),
+              ),
+              SizedBox(height: 16.h),
+              Text(
+                'Confirm Changes',
+                style: TextStyle(
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+              SizedBox(height: 12.h),
+              Text(
+                'Are you sure you want to save these changes?',
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  color: Colors.grey.shade700,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 24.h),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.black,
+                        side:
+                            BorderSide(color: Colors.grey.shade400, width: 1.5),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
+                        textStyle: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      onPressed: () {
+                        HapticFeedback.selectionClick();
+                        context.pop();
+                      },
+                      child: const Text('Cancel'),
+                    ),
+                  ),
+                  SizedBox(width: 16.w),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xff6ab3d9),
+                        foregroundColor: Colors.white,
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
+                        textStyle: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      onPressed: () {
+                        HapticFeedback.mediumImpact();
+                        context.pop();
+                        _submitChanges(context);
+                      },
+                      child: const Text('Save'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
-        ElevatedButton(
-          onPressed: () {
-            context.pop();
-            _submitChanges(context);
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xff6ab3d9),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8.r),
-            ),
-          ),
-          child: Text(
-            'Save',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16.sp,
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 
@@ -170,6 +353,16 @@ class _EditMarkerViewState extends State<EditMarkerView> {
     List<XFile> images = (state is EditMarkerState)
         ? state.newImages.map((file) => XFile(file.path)).toList()
         : <XFile>[];
+    List<XFile> pdfs = (state is EditMarkerState)
+        ? state.newPdfs.map((file) => XFile(file.path)).toList()
+        : <XFile>[];
+    // context.read<HomeBloc>().add(
+    //       UploadFilesEvent(
+    //         locationId: widget.location.id,
+    //         newImages: images,
+    //         newPdfs: pdfs,
+    //       ),
+    //     );
     context.read<HomeBloc>().add(
           EditMarkerEvent(
             locationId: widget.location.id,
@@ -179,29 +372,13 @@ class _EditMarkerViewState extends State<EditMarkerView> {
             subAspect: subAspectId,
             category: categoryId,
             newImages: images,
+            newPdfs: pdfs,
           ),
         );
   }
 
   @override
   Widget build(BuildContext context) {
-    //   Future.microtask(() {
-    // context.read<HomeBloc>().add(InitEditMarkerEvent(
-    //   aspect: location.aspectId,
-    //   subAspect: location.subAspectId,
-    //   category: location.categoryId,
-    //   newImages: [],
-    //   name: location.name,
-    // ));
-    // context.read<HomeBloc>().add(FetchAspectsEvent());
-    // if (location.aspectId != null) {
-    //   context.read<HomeBloc>().add(FetchSubAspectsEvent(location.aspectId!));
-    // }
-    // if (location.subAspectId != null) {
-    //   context.read<HomeBloc>().add(FetchCategoriesEvent(location.subAspectId!));
-    // }
-    //   });
-    // _initBlocState(context);
     return Scaffold(
       body: BlocConsumer<HomeBloc, HomeState>(
         listener: (context, state) {
@@ -210,19 +387,60 @@ class _EditMarkerViewState extends State<EditMarkerView> {
               SnackBar(
                 content: Text(state.message),
                 backgroundColor: Colors.green,
+                duration: const Duration(seconds: 3),
               ),
             );
             context.go(Routes.home);
-          } else if (state is EditMarkerState) {
-            print(
-                "EditMarkerState: aspect=${state.selectedAspect}, subAspect=${state.selectedSubAspect}, category=${state.selectedCategory}");
-            print(
-                "EditMarkerState: aspects=${state.aspects.length}, subAspects=${state.subAspects.length}, categories=${state.categories.length}");
           } else if (state is EditMarkerError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.message),
                 backgroundColor: Colors.red,
+                duration: const Duration(seconds: 4),
+              ),
+            );
+            context
+                .read<HomeBloc>()
+                .add(FetchLocationDetailsEvent(widget.location.id));
+          } else if (state is DeleteReferenceFileSuccess) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.green,
+                duration: const Duration(seconds: 2),
+              ),
+            );
+            context
+                .read<HomeBloc>()
+                .add(FetchLocationDetailsEvent(widget.location.id));
+          } else if (state is DeleteImageSuccess) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.green,
+                duration: const Duration(seconds: 2),
+              ),
+            );
+            context
+                .read<HomeBloc>()
+                .add(FetchLocationDetailsEvent(widget.location.id));
+          } else if (state is DeleteReferenceFileError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 3),
+              ),
+            );
+            context
+                .read<HomeBloc>()
+                .add(FetchLocationDetailsEvent(widget.location.id));
+          } else if (state is DeleteImageError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 3),
               ),
             );
             context
@@ -231,42 +449,130 @@ class _EditMarkerViewState extends State<EditMarkerView> {
           }
         },
         builder: (context, state) {
-          // Loading state
-          if (state is LocationLoading || state is EditMarkerLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          // Error state
-
-          // Loaded state
-          else if (state is EditMarkerState) {
-            List<File> images =
-                state.newImages.map((file) => File(file.path)).toList();
-            return SingleChildScrollView(
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    const Header(headerText: 'Edit Marker'),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 32.w),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(height: 24.h),
-                          _buildFormFields(context, state, images),
-                          SizedBox(height: 32.h),
-                          _buildActionButtons(context),
-                          SizedBox(height: 24.h),
-                        ],
-                      ),
+          final isDeleteLoading = state is DeleteReferenceFileLoading ||
+              state is DeleteImageLoading;
+          if (state is EditMarkerLoading) {
+            return Column(
+              children: [
+                const Header(headerText: 'Edit Marker'),
+                SizedBox(height: 24.h),
+                Expanded(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Shimmer.fromColors(
+                          baseColor: Colors.grey.shade300,
+                          highlightColor: Colors.grey.shade100,
+                          child: Container(
+                            width: 40.w,
+                            height: 40.w,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 16.h),
+                        Text(
+                          'Updating marker information...',
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
             );
           }
-          // Fallback
-          return const Center(child: CircularProgressIndicator());
+
+          if (state is EditMarkerState) {
+            List<File> images =
+                state.newImages.map((file) => File(file.path)).toList();
+
+            return Stack(
+              children: [
+                SingleChildScrollView(
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        const Header(headerText: 'Edit Marker'),
+                        SizedBox(height: 24.h),
+                        if (!isDeleteLoading &&
+                            (state.isUploading ||
+                                state.overallProgress > 0.0)) ...[
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 32.w),
+                            child: EditProgressIndicator(state: state),
+                          ),
+                          SizedBox(height: 16.h),
+                        ],
+                        Opacity(
+                          opacity: state.isUploading ? 0.6 : 1.0,
+                          child: AbsorbPointer(
+                            absorbing: state.isUploading,
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 32.w),
+                              child: _buildFormFields(context, state, images),
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 32.h),
+                        Opacity(
+                          opacity: state.isUploading ? 0.6 : 1.0,
+                          child: AbsorbPointer(
+                            absorbing: state.isUploading,
+                            child: _buildActionButtons(context),
+                          ),
+                        ),
+                        SizedBox(height: 24.h),
+                      ],
+                    ),
+                  ),
+                ),
+                if (isDeleteLoading)
+                  Positioned.fill(
+                    child: Container(
+                      color: Colors.black.withOpacity(0.4),
+                      child: Center(
+                        child: Shimmer.fromColors(
+                          baseColor: Colors.grey.shade300,
+                          highlightColor: Colors.grey.shade100,
+                          child: Container(
+                            width: 40.w,
+                            height: 40.w,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          }
+
+          // Fallback for other states
+          return Center(
+            child: Shimmer.fromColors(
+              baseColor: Colors.grey.shade300,
+              highlightColor: Colors.grey.shade100,
+              child: Container(
+                width: 40.w,
+                height: 40.w,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
+          );
         },
       ),
     );
@@ -362,9 +668,266 @@ class _EditMarkerViewState extends State<EditMarkerView> {
         SizedBox(
           height: 20.h,
         ),
-        if (localImages.isNotEmpty || networkImages.isNotEmpty)
-          _buildImageGallery(context, localImages, networkImages),
+
+        if (state is EditMarkerState)
+          EditBuildGallery(
+            state: state,
+            location: state.location ?? widget.location,
+            onRemoveNewImage: (file) {
+              final currentState = context.read<HomeBloc>().state;
+              if (currentState is EditMarkerState) {
+                final newImages = List<File>.from(currentState.newImages);
+                newImages.removeWhere((f) => f.path == file.path);
+                context
+                    .read<HomeBloc>()
+                    .add(UpdateEditMarkerImagesEvent(newImages));
+              }
+            },
+            onRemoveNewFile: (file) {
+              final currentState = context.read<HomeBloc>().state;
+              if (currentState is EditMarkerState) {
+                final newPdfs = List<File>.from(currentState.newPdfs);
+                newPdfs.removeWhere((f) => f.path == file.path);
+                context
+                    .read<HomeBloc>()
+                    .add(UpdateEditMarkerPdfsEvent(newPdfs));
+              }
+            },
+            onRemoveOldFile: (fileData) async {
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (ctx) => Dialog(
+                  backgroundColor: Colors.transparent,
+                  child: Card(
+                    color: Colors.white,
+                    elevation: 8,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20.r),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(20.w),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.delete_outline,
+                            size: 48.sp,
+                            color: Colors.red.shade400,
+                          ),
+                          SizedBox(height: 16.h),
+                          Text(
+                            'Delete File',
+                            style: TextStyle(
+                              fontSize: 20.sp,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
+                          ),
+                          SizedBox(height: 12.h),
+                          Text(
+                            'Are you sure you want to delete this file?',
+                            style: TextStyle(
+                              fontSize: 16.sp,
+                              color: Colors.grey.shade700,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: 24.h),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton(
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: Colors.black,
+                                    side: BorderSide(
+                                        color: Colors.grey.shade400,
+                                        width: 1.5),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12.r),
+                                    ),
+                                    padding:
+                                        EdgeInsets.symmetric(vertical: 14.h),
+                                    textStyle: TextStyle(
+                                      fontSize: 16.sp,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  onPressed: () => Navigator.of(ctx).pop(false),
+                                  child: const Text('No'),
+                                ),
+                              ),
+                              SizedBox(width: 16.w),
+                              Expanded(
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.red.shade400,
+                                    foregroundColor: Colors.white,
+                                    elevation: 2,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12.r),
+                                    ),
+                                    padding:
+                                        EdgeInsets.symmetric(vertical: 14.h),
+                                    textStyle: TextStyle(
+                                      fontSize: 16.sp,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  onPressed: () => Navigator.of(ctx).pop(true),
+                                  child: const Text('Yes'),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+              if (confirmed == true) {
+                final fileId = fileData['id'] as int?;
+                if (fileId != null) {
+                  context.read<HomeBloc>().add(DeleteReferenceFileEvent(
+                      locationId: widget.location.id, fileId: fileId));
+                }
+              }
+            },
+            onRemoveOldImage: (imageUrl) async {
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (ctx) => Dialog(
+                  backgroundColor: Colors.transparent,
+                  child: Card(
+                    color: Colors.white,
+                    elevation: 8,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20.r),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(20.w),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.delete_outline,
+                            size: 48.sp,
+                            color: Colors.red.shade400,
+                          ),
+                          SizedBox(height: 16.h),
+                          Text(
+                            'Delete Image',
+                            style: TextStyle(
+                              fontSize: 20.sp,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
+                          ),
+                          SizedBox(height: 12.h),
+                          Text(
+                            'Are you sure you want to delete this image?',
+                            style: TextStyle(
+                              fontSize: 16.sp,
+                              color: Colors.grey.shade700,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: 24.h),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton(
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: Colors.black,
+                                    side: BorderSide(
+                                        color: Colors.grey.shade400,
+                                        width: 1.5),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12.r),
+                                    ),
+                                    padding:
+                                        EdgeInsets.symmetric(vertical: 14.h),
+                                    textStyle: TextStyle(
+                                      fontSize: 16.sp,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  onPressed: () => Navigator.of(ctx).pop(false),
+                                  child: const Text('No'),
+                                ),
+                              ),
+                              SizedBox(width: 16.w),
+                              Expanded(
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.red.shade400,
+                                    foregroundColor: Colors.white,
+                                    elevation: 2,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12.r),
+                                    ),
+                                    padding:
+                                        EdgeInsets.symmetric(vertical: 14.h),
+                                    textStyle: TextStyle(
+                                      fontSize: 16.sp,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  onPressed: () => Navigator.of(ctx).pop(true),
+                                  child: const Text('Yes'),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+              if (confirmed == true) {
+                // Find the image id from location.images
+                final images = widget.location.images;
+                int? imageId;
+                for (final img in images) {
+                  if (img is Map<String, dynamic> &&
+                      img['image_path'] != null) {
+                    final url = '${EndPoint.imageBaseUrl}${img['image_path']}';
+                    if (url == imageUrl) {
+                      imageId = img['id'] as int?;
+                      break;
+                    }
+                  } else if (img is String) {
+                    final url = '${EndPoint.imageBaseUrl}$img';
+                    if (url == imageUrl) {
+                      // If image is string, you may not have id
+                      // You may need to adjust this logic if id is required
+                    }
+                  }
+                }
+                if (imageId != null) {
+                  context.read<HomeBloc>().add(DeleteImageEvent(
+                      locationId: widget.location.id, imageId: imageId));
+                }
+              }
+            },
+          ),
+        // SizedBox(height: 20.h),
+        // _buildPdfsField(state),
+        // _buildGallery(state, localImages, networkImages)
       ],
+    );
+  }
+
+  Widget _buildDetailField(String hintText, IconData icon) {
+    return InputTextFormField(
+      hintText: hintText,
+      prefixIcon: Icon(icon, color: const Color(0xff787878), size: 18.sp),
+      enabled: false,
+      height: 35.h,
+      hintStyle:
+          Theme.of(context).textTheme.labelMedium?.copyWith(fontSize: 16.sp),
+      padding: EdgeInsets.symmetric(vertical: 0),
     );
   }
 
@@ -403,176 +966,39 @@ class _EditMarkerViewState extends State<EditMarkerView> {
     );
   }
 
-  Widget _buildImageUploadField(BuildContext context) {
-    return GestureDetector(
-      onTap: () => _handleImageSelection(context),
-      child: InputTextFormField(
-        hintText: 'Upload files',
-        hintStyle: TextStyle(color: Color(0xff787878), fontSize: 16.sp),
-        enabled: false,
-        prefixIcon: const Icon(Icons.image_outlined, color: Color(0xff787878)),
-        suffixIcon: const Icon(Icons.upload, color: Color(0xff787878)),
-      ),
-    );
-  }
-
-  Widget _buildImageGallery(BuildContext context, List<File> localImages,
-      List<String> networkImages) {
-    // Combine both lists with type and index for removal
-    final allImages = [
-      ...networkImages.asMap().entries.map((entry) =>
-          {'type': 'network', 'url': entry.value, 'index': entry.key}),
-      ...localImages.asMap().entries.map(
-          (entry) => {'type': 'file', 'file': entry.value, 'index': entry.key}),
-    ];
-    final networkCount = networkImages.length;
-    return SizedBox(
-      height: 120.w,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: allImages.length,
-        separatorBuilder: (context, index) => SizedBox(width: 8.w),
-        itemBuilder: (context, index) {
-          final img = allImages[index];
-          if (img['type'] == 'network') {
-            return Container(
-              width: 120.w,
-              height: 120.w,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10.r),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(10.r),
-                child: CachedNetworkImage(
-                  imageUrl: img['url'] as String,
-                  fit: BoxFit.cover,
-                  errorWidget: (context, url, error) => Container(
-                    color: const Color(0xffd9d9d9),
-                    child: const Icon(Icons.error),
-                  ),
-                  placeholder: (context, url) => Container(
-                    color: const Color(0xffd9d9d9),
-                    child: const Center(child: CircularProgressIndicator()),
-                  ),
-                ),
-              ),
-            );
-          } else {
-            // Local image with remove button
-            return Stack(
-              children: [
-                Container(
-                  width: 120.w,
-                  height: 120.w,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10.r),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10.r),
-                    child: Image.file(
-                      img['file'] as File,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        color: const Color(0xffd9d9d9),
-                        child: const Icon(Icons.error),
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  right: 4,
-                  top: 4,
-                  child: GestureDetector(
-                    onTap: () {
-                      final removeIndex = img['index'] as int;
-                      final currentState = context.read<HomeBloc>().state;
-                      if (currentState is EditMarkerState) {
-                        final newImages =
-                            List<File>.from(currentState.newImages);
-                        if (removeIndex >= 0 &&
-                            removeIndex < newImages.length) {
-                          newImages.removeAt(removeIndex);
-                          context
-                              .read<HomeBloc>()
-                              .add(UpdateEditMarkerImagesEvent(newImages));
-                        }
-                      }
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child:
-                          const Icon(Icons.close, color: Colors.red, size: 16),
-                    ),
-                  ),
-                ),
-              ],
-            );
-          }
-        },
-      ),
-    );
-  }
-
   Widget _buildActionButtons(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: AuthButton(
-            onPressed: () => _handleSave(context),
-            text: 'Save',
-            buttonWidth: double.infinity,
-            buttonHeight: 50.h,
-            textStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-            buttonStyle: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xff6ab3d9),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(25.r),
-              ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 25),
+      child: Row(
+        children: [
+          Expanded(
+            child: AuthButton(
+              onPressed: () => _handleSave(context),
+              text: 'Save',
+              buttonWidth: double.infinity,
+              buttonHeight: 50.h,
+              backGroundColor: Color(0xff6ab3d9),
+              textColor: Colors.white,
             ),
           ),
-        ),
-        SizedBox(width: 16.w),
-        Expanded(
-          child: AuthButton(
-            onPressed: () {
-              context
-                  .read<HomeBloc>()
-                  .add(FetchLocationDetailsEvent(widget.location.id));
-              context.pop();
-            },
-            text: 'Cancel',
-            buttonWidth: double.infinity,
-            buttonHeight: 50.h,
-            textStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-            buttonStyle: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              side: const BorderSide(color: Color(0xff6ab3d9), width: 1.5),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(25.r),
-              ),
+          SizedBox(width: 16.w),
+          Expanded(
+            child: AuthButton(
+              onPressed: () {
+                HapticFeedback.selectionClick();
+                context
+                    .read<HomeBloc>()
+                    .add(FetchLocationDetailsEvent(widget.location.id));
+                context.pop();
+              },
+              text: 'Cancel',
+              buttonWidth: double.infinity,
+              buttonHeight: 50.h,
+              sideBar: true,
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

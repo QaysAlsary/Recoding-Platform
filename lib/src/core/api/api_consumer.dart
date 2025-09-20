@@ -11,6 +11,7 @@ abstract class ApiConsumer {
     Map<String, dynamic>? queryParameters,
     bool isFromData = false,
     Map<String, String>? headers,
+    Function(double)? onProgress,
   });
   Future<dynamic> put(
     String path, {
@@ -18,6 +19,7 @@ abstract class ApiConsumer {
     Map<String, dynamic>? queryParameters,
     bool isFromData = false,
     Map<String, String>? headers,
+    Function(double)? onProgress,
   });
   Future<dynamic> delete(
     String path, {

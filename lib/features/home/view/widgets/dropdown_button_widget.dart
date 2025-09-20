@@ -21,9 +21,9 @@ class DropdownButtonWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final isOpen = openMenuLabel == label;
     return ElevatedButton(
-
       onPressed: () {
-        FocusScope.of(context).unfocus(); // Dismiss any open inputs or dropdowns
+        FocusScope.of(context)
+            .unfocus(); // Dismiss any open inputs or dropdowns
         context.read<HomeBloc>().add(ToggleMenuEvent(label));
       },
       style: ElevatedButton.styleFrom(
@@ -32,7 +32,8 @@ class DropdownButtonWidget extends StatelessWidget {
         elevation: 0,
         fixedSize: Size.fromHeight(40.h),
         shape: const BeveledRectangleBorder(),
-        textStyle: Theme.of(context).textTheme.labelMedium?.copyWith(fontSize: 12.r),
+        textStyle:
+            Theme.of(context).textTheme.labelMedium?.copyWith(fontSize: 12.r),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -41,7 +42,11 @@ class DropdownButtonWidget extends StatelessWidget {
             children: [
               Icon(icon, size: 20.r, color: Colors.grey),
               8.horizontalSpace,
-              Text(label, style: Theme.of(context).textTheme.labelMedium?.copyWith(fontSize: 12.r)),
+              Text(label,
+                  style: Theme.of(context)
+                      .textTheme
+                      .labelMedium
+                      ?.copyWith(fontSize: 12.r)),
             ],
           ),
           Icon(

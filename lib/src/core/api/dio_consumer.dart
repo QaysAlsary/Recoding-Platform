@@ -9,6 +9,11 @@ class DioConsumer extends ApiConsumer {
 
   DioConsumer({required this.dio}) {
     dio.options.baseUrl = EndPoint.baseUrl;
+    dio.options.followRedirects = false; // Don't follow redirects automatically
+    dio.options.validateStatus = (status) {
+      // Accept 200, 201, 202, 204 as success, but handle 302 separately
+      return status != null && status < 300;
+    };
     dio.interceptors.add(ApiInterceptor());
     dio.interceptors.add(LogInterceptor(
       request: true,
@@ -68,6 +73,7 @@ class DioConsumer extends ApiConsumer {
     Map<String, dynamic>? queryParameters,
     bool isFromData = false,
     Map<String, String>? headers,
+    Function(double)? onProgress,
   }) async {
     try {
       final response = await dio.put(
@@ -75,6 +81,14 @@ class DioConsumer extends ApiConsumer {
         data: isFromData ? FormData.fromMap(data) : data,
         queryParameters: queryParameters,
         options: Options(headers: headers),
+        onSendProgress: onProgress != null
+            ? (sent, total) {
+                if (total != -1) {
+                  final progress = sent / total;
+                  onProgress(progress);
+                }
+              }
+            : null,
       );
       return response.data;
     } on DioException catch (e) {
@@ -89,6 +103,7 @@ class DioConsumer extends ApiConsumer {
     Map<String, dynamic>? queryParameters,
     bool isFromData = false,
     Map<String, String>? headers,
+    Function(double)? onProgress,
   }) async {
     try {
       final response = await dio.post(
@@ -96,9 +111,24 @@ class DioConsumer extends ApiConsumer {
         data: isFromData ? FormData.fromMap(data) : data,
         queryParameters: queryParameters,
         options: Options(headers: headers),
+        onSendProgress: onProgress != null
+            ? (sent, total) {
+                if (total != -1) {
+                  final progress = sent / total;
+                  onProgress(progress);
+                }
+              }
+            : null,
       );
+
       return response.data;
     } on DioException catch (e) {
+      // Handle 302 redirect specifically
+      if (e.response?.statusCode == 302) {
+        throw Exception(
+            'API endpoint not found or requires authentication. Status: 302');
+      }
+
       handleDioExceptions(e);
     }
   }

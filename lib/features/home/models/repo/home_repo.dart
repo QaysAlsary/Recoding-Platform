@@ -24,9 +24,8 @@ class HomeRepo {
       );
       return Right(LocationResponse.fromJson(response));
     } on ServerException catch (e) {
-      final errorMessage =
-          e.errModel.errorMessage ?? 'An unknown server error occurred.';
-      print(errorMessage);
+      final errorMessage = e.errModel.errorMessage;
+
       return Left(errorMessage);
     }
   }
@@ -38,7 +37,6 @@ class HomeRepo {
       );
       return Right(response['message'] ?? 'Marker deleted successfully');
     } on ServerException catch (e) {
-      print(e.errModel.errorMessage);
       return Left(e.errModel.errorMessage);
     }
   }
@@ -50,7 +48,9 @@ class HomeRepo {
     required int? aspect,
     required int? subAspect,
     required int? category,
-    List<XFile>? newImages,
+
+    // List<XFile>? newImages,
+    // List<XFile>? newPdfs,
   }) async {
     try {
       final Map<String, dynamic> data = {
@@ -60,18 +60,41 @@ class HomeRepo {
         'sub_aspect_id': subAspect,
         'category_id': category,
       };
-      print("ggllgg :$data");
-      print('=== EDIT MARKER DEBUG ===');
-      print('Sending to server:');
-      print(
-          'URL: ${EndPoint.baseUrl + EndPoint.getSelectedLocatin(locationId)}');
-      print('Data: $data');
-      print('Method: POST');
+
+      final response = await api.put(
+        EndPoint.baseUrl + EndPoint.getSelectedLocatin(locationId),
+        data: data,
+      );
+
+      return Right(response['message'] ?? 'Marker updated successfully');
+    } on ServerException catch (e) {
+      return Left(e.errModel.errorMessage);
+    } catch (e) {
+      return Left('Failed to update marker: ${e.toString()}');
+    }
+  }
+
+  Future<Either<String, String>> uploadImagesFilestoExistingMarker({
+    required int locationId,
+    List<XFile>? newImages,
+    List<XFile>? newPdfs,
+    Function(double)? onProgress,
+  }) async {
+    try {
+      // Check if there are actually files to upload
+      final hasImages = newImages != null && newImages.isNotEmpty;
+      final hasPdfs = newPdfs != null && newPdfs.isNotEmpty;
+
+      if (!hasImages && !hasPdfs) {
+        return const Right('No files to upload');
+      }
+
+      final Map<String, dynamic> data = {};
 
       // Add images if provided
-      if (newImages != null && newImages.isNotEmpty) {
+      if (hasImages) {
         final List<MultipartFile> imageFiles = await Future.wait(
-          newImages.map((image) async {
+          newImages!.map((image) async {
             final bytes = await image.readAsBytes();
             return MultipartFile.fromBytes(
               bytes,
@@ -83,19 +106,47 @@ class HomeRepo {
         data['images[]'] = imageFiles;
       }
 
-      final response = await api.put(
-        EndPoint.baseUrl + EndPoint.getSelectedLocatin(locationId),
+      // Add PDFs if provided
+      if (hasPdfs) {
+        final List<MultipartFile> pdfFiles = await Future.wait(
+          newPdfs!.map((pdf) async {
+            final bytes = await pdf.readAsBytes();
+            return MultipartFile.fromBytes(
+              bytes,
+              filename: pdf.name,
+              contentType:
+                  MediaType.parse(pdf.mimeType ?? 'application/octet-stream'),
+            );
+          }),
+        );
+        data['references[]'] = pdfFiles;
+      }
+
+      // Make the upload request with progress tracking
+      final response = await api.post(
+        isFromData: true,
+        EndPoint.baseUrl +
+            EndPoint.getSelectedLocatin(locationId) +
+            '/' +
+            EndPoint.uploadFiles,
         data: data,
+        onProgress: (progress) {
+          if (onProgress != null) {
+            onProgress(progress);
+          }
+        },
       );
-      print('Server response: $response');
-      print('=== END DEBUG ===');
-      return Right(response['message'] ?? 'Marker updated successfully');
+
+      final uploadedImagesCount = hasImages ? newImages!.length : 0;
+      final uploadedPdfsCount = hasPdfs ? newPdfs!.length : 0;
+      final defaultMessage =
+          'Successfully uploaded $uploadedImagesCount image(s) and $uploadedPdfsCount file(s)';
+
+      return Right(response['message'] ?? defaultMessage);
     } on ServerException catch (e) {
-      print(e.errModel.errorMessage);
       return Left(e.errModel.errorMessage);
     } catch (e) {
-      print('Error updating marker: $e');
-      return Left('Failed to update marker: ${e.toString()}');
+      return Left('Failed to upload files: ${e.toString()}');
     }
   }
 
@@ -108,6 +159,8 @@ class HomeRepo {
     required double longitude,
     String? description,
     List<XFile>? images,
+    List<XFile>? pdfs,
+    Function(double)? onProgress,
   }) async {
     try {
       final Map<String, dynamic> data = {
@@ -136,17 +189,29 @@ class HomeRepo {
         data['images[]'] = imageFiles;
       }
 
+      // Add pdfs if provided
+      if (pdfs != null && pdfs.isNotEmpty) {
+        final List<MultipartFile> pdfFiles = await Future.wait(
+          pdfs.map((pdf) async {
+            final bytes = await pdf.readAsBytes();
+            return MultipartFile.fromBytes(bytes,
+                filename: pdf.name,
+                contentType: MediaType.parse(
+                    pdf.mimeType ?? 'application/octet-stream'));
+          }),
+        );
+        data['references[]'] = pdfFiles;
+      }
       final response = await api.post(
         EndPoint.baseUrl + EndPoint.locations,
         data: data,
         isFromData: true,
+        onProgress: onProgress,
       );
       return Right(response['message'] ?? 'Marker created successfully');
     } on ServerException catch (e) {
-      print(e.errModel.errorMessage);
       return Left(e.errModel.errorMessage);
     } catch (e) {
-      print('Error creating marker: $e');
       return Left('Failed to create marker: ${e.toString()}');
     }
   }
@@ -165,12 +230,10 @@ class HomeRepo {
 
       return Right(markers);
     } on ServerException catch (e) {
-      final errorMessage =
-          e.errModel.errorMessage ?? 'An unknown server error occurred.';
-      print('Error fetching markers: $errorMessage');
+      final errorMessage = e.errModel.errorMessage;
+
       return Left(errorMessage);
     } catch (e) {
-      print('Error fetching markers: $e');
       return Left('Failed to fetch markers: ${e.toString()}');
     }
   }
@@ -184,12 +247,10 @@ class HomeRepo {
       final aspects = data.map((e) => AspectModel2.fromJson(e)).toList();
       return Right(aspects);
     } on ServerException catch (e) {
-      final errorMessage =
-          e.errModel.errorMessage ?? 'An unknown server error occurred.';
-      print(errorMessage);
+      final errorMessage = e.errModel.errorMessage;
+
       return Left(errorMessage);
     } catch (e) {
-      print('Error fetching aspects: $e');
       return Left('Failed to fetch aspects: ${e.toString()}');
     }
   }
@@ -205,12 +266,10 @@ class HomeRepo {
       final subAspects = data.map((e) => SubAspectModel.fromJson(e)).toList();
       return Right(subAspects);
     } on ServerException catch (e) {
-      final errorMessage =
-          e.errModel.errorMessage ?? 'An unknown server error occurred.';
-      print(errorMessage);
+      final errorMessage = e.errModel.errorMessage;
+
       return Left(errorMessage);
     } catch (e) {
-      print('Error fetching sub-aspects: $e');
       return Left('Failed to fetch sub-aspects: ${e.toString()}');
     }
   }
@@ -225,13 +284,36 @@ class HomeRepo {
       final categories = data.map((e) => CategoryModel.fromJson(e)).toList();
       return Right(categories);
     } on ServerException catch (e) {
-      final errorMessage =
-          e.errModel.errorMessage ?? 'An unknown server error occurred.';
-      print(errorMessage);
+      final errorMessage = e.errModel.errorMessage;
+
       return Left(errorMessage);
     } catch (e) {
-      print('Error fetching categories: $e');
       return Left('Failed to fetch categories: ${e.toString()}');
+    }
+  }
+
+  Future<Either<String, String>> deleteReferenceFile(
+      {required int locationId, required int fileId}) async {
+    try {
+      final response = await api.delete(
+        EndPoint.baseUrl + 'locations/$locationId/delete-reference/$fileId',
+      );
+      return Right(
+          response['message'] ?? 'Reference file deleted successfully');
+    } on ServerException catch (e) {
+      return Left(e.errModel.errorMessage);
+    }
+  }
+
+  Future<Either<String, String>> deleteImage(
+      {required int locationId, required int imageId}) async {
+    try {
+      final response = await api.delete(
+        EndPoint.baseUrl + 'locations/$locationId/delete-image/$imageId',
+      );
+      return Right(response['message'] ?? 'Image deleted successfully');
+    } on ServerException catch (e) {
+      return Left(e.errModel.errorMessage);
     }
   }
 }

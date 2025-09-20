@@ -60,6 +60,9 @@ final class MenuState extends HomeState {
   final List<String> selectedSubaspects;
   final List<MarkerData> searchFilteredMarkers;
   final List<MarkerData> layerFilteredMarkers;
+  final List<LocationSuggestion> searchSuggestions;
+  final bool isLoadingSearchSuggestions;
+  final String currentSearchQuery;
 
   const MenuState({
     this.openMenuLabel,
@@ -84,6 +87,9 @@ final class MenuState extends HomeState {
     this.selectedSubaspects = const [],
     this.searchFilteredMarkers = const [],
     this.layerFilteredMarkers = const [],
+    this.searchSuggestions = const [],
+    this.isLoadingSearchSuggestions = false,
+    this.currentSearchQuery = '',
   });
 
   MenuState copyWith({
@@ -109,6 +115,9 @@ final class MenuState extends HomeState {
     List<String>? selectedSubaspects,
     List<MarkerData>? searchFilteredMarkers,
     List<MarkerData>? layerFilteredMarkers,
+    List<LocationSuggestion>? searchSuggestions,
+    bool? isLoadingSearchSuggestions,
+    String? currentSearchQuery,
   }) {
     return MenuState(
       openMenuLabel: openMenuLabel ?? this.openMenuLabel,
@@ -137,6 +146,10 @@ final class MenuState extends HomeState {
       searchFilteredMarkers:
           searchFilteredMarkers ?? this.searchFilteredMarkers,
       layerFilteredMarkers: layerFilteredMarkers ?? this.layerFilteredMarkers,
+      searchSuggestions: searchSuggestions ?? this.searchSuggestions,
+      isLoadingSearchSuggestions:
+          isLoadingSearchSuggestions ?? this.isLoadingSearchSuggestions,
+      currentSearchQuery: currentSearchQuery ?? this.currentSearchQuery,
     );
   }
 
@@ -164,6 +177,9 @@ final class MenuState extends HomeState {
         selectedSubaspects,
         searchFilteredMarkers,
         layerFilteredMarkers,
+        searchSuggestions,
+        isLoadingSearchSuggestions,
+        currentSearchQuery,
       ];
 }
 
@@ -247,6 +263,7 @@ final class EditMarkerState extends HomeState {
   final int? selectedSubAspect;
   final int? selectedCategory;
   final List<File> newImages;
+  final List<File> newPdfs;
   final String? name;
   final Location? location;
   // Dropdown data and loading/error flags
@@ -260,6 +277,10 @@ final class EditMarkerState extends HomeState {
   final String? aspectsError;
   final String? subAspectsError;
   final String? categoriesError;
+  // Add upload progress fields
+  final Map<String, double> uploadProgress;
+  final bool isUploading;
+  final double overallProgress;
   static const _unset = Object();
 
   const EditMarkerState({
@@ -269,6 +290,7 @@ final class EditMarkerState extends HomeState {
     this.selectedSubAspect,
     this.selectedCategory,
     this.newImages = const [],
+    this.newPdfs = const [],
     this.name,
     this.aspects = const [],
     this.subAspects = const [],
@@ -279,6 +301,9 @@ final class EditMarkerState extends HomeState {
     this.aspectsError,
     this.subAspectsError,
     this.categoriesError,
+    this.uploadProgress = const {},
+    this.isUploading = false,
+    this.overallProgress = 0.0,
   });
 
   EditMarkerState copyWith({
@@ -287,6 +312,7 @@ final class EditMarkerState extends HomeState {
     Object? selectedCategory = _unset,
     Location? location,
     List<File>? newImages,
+    List<File>? newPdfs,
     String? name,
     List<AspectModel2>? aspects,
     List<SubAspectModel>? subAspects,
@@ -298,6 +324,9 @@ final class EditMarkerState extends HomeState {
     String? aspectsError,
     String? subAspectsError,
     String? categoriesError,
+    Map<String, double>? uploadProgress,
+    bool? isUploading,
+    double? overallProgress,
   }) {
     return EditMarkerState(
       location: location ?? this.location,
@@ -312,6 +341,7 @@ final class EditMarkerState extends HomeState {
           ? this.selectedCategory
           : selectedCategory as int?,
       newImages: newImages ?? this.newImages,
+      newPdfs: newPdfs ?? this.newPdfs,
       name: name ?? this.name,
       aspects: aspects ?? this.aspects,
       subAspects: subAspects ?? this.subAspects,
@@ -322,6 +352,9 @@ final class EditMarkerState extends HomeState {
       aspectsError: aspectsError ?? this.aspectsError,
       subAspectsError: subAspectsError ?? this.subAspectsError,
       categoriesError: categoriesError ?? this.categoriesError,
+      uploadProgress: uploadProgress ?? this.uploadProgress,
+      isUploading: isUploading ?? this.isUploading,
+      overallProgress: overallProgress ?? this.overallProgress,
     );
   }
 
@@ -331,6 +364,7 @@ final class EditMarkerState extends HomeState {
         selectedSubAspect,
         selectedCategory,
         newImages,
+        newPdfs,
         name,
         aspects,
         subAspects,
@@ -341,11 +375,15 @@ final class EditMarkerState extends HomeState {
         aspectsError,
         subAspectsError,
         categoriesError,
+        uploadProgress,
+        isUploading,
+        overallProgress,
       ];
 }
 
 final class CreateMarkerFormState extends HomeState {
   final List<XFile> selectedImages;
+  final List<XFile> selectedPdfs;
   final int? selectedAspect;
   final int? selectedSubAspect;
   final int? selectedCategory;
@@ -361,9 +399,12 @@ final class CreateMarkerFormState extends HomeState {
   final String? aspectsError;
   final String? subAspectsError;
   final String? categoriesError;
-
+  final Map<String, double> uploadProgress; // fileName -> progress (0.0 to 1.0)
+  final bool isUploading;
+  final double overallProgress;
   const CreateMarkerFormState({
     this.selectedImages = const [],
+    this.selectedPdfs = const [],
     this.selectedAspect,
     this.selectedSubAspect,
     this.selectedCategory,
@@ -376,10 +417,14 @@ final class CreateMarkerFormState extends HomeState {
     this.aspectsError,
     this.subAspectsError,
     this.categoriesError,
+    this.uploadProgress = const {},
+    this.isUploading = false,
+    this.overallProgress = 0.0,
   });
 
   CreateMarkerFormState copyWith({
     List<XFile>? selectedImages,
+    List<XFile>? selectedPdfs,
     Object? selectedAspect = _unset,
     Object? selectedSubAspect = _unset,
     Object? selectedCategory = _unset,
@@ -392,9 +437,13 @@ final class CreateMarkerFormState extends HomeState {
     String? aspectsError,
     String? subAspectsError,
     String? categoriesError,
+    Map<String, double>? uploadProgress,
+    bool? isUploading,
+    double? overallProgress,
   }) {
     return CreateMarkerFormState(
       selectedImages: selectedImages ?? this.selectedImages,
+      selectedPdfs: selectedPdfs ?? this.selectedPdfs,
       selectedAspect: identical(selectedAspect, _unset)
           ? this.selectedAspect
           : selectedAspect as int?,
@@ -413,12 +462,16 @@ final class CreateMarkerFormState extends HomeState {
       aspectsError: aspectsError ?? this.aspectsError,
       subAspectsError: subAspectsError ?? this.subAspectsError,
       categoriesError: categoriesError ?? this.categoriesError,
+      uploadProgress: uploadProgress ?? this.uploadProgress,
+      isUploading: isUploading ?? this.isUploading,
+      overallProgress: overallProgress ?? this.overallProgress,
     );
   }
 
   @override
   List<Object?> get props => [
         selectedImages,
+        selectedPdfs,
         selectedAspect,
         selectedSubAspect,
         selectedCategory,
@@ -431,6 +484,9 @@ final class CreateMarkerFormState extends HomeState {
         aspectsError,
         subAspectsError,
         categoriesError,
+        isUploading,
+        overallProgress,
+        uploadProgress
       ];
 }
 
@@ -497,6 +553,94 @@ final class CategoriesLoaded extends HomeState {
 final class CategoriesError extends HomeState {
   final String message;
   const CategoriesError(this.message);
+  @override
+  List<Object?> get props => [message];
+}
+
+final class UploadFiles extends HomeState {
+  final Map<String, double> uploadProgress; // fileName -> progress (0.0 to 1.0)
+  final bool isUploading;
+  final double overallProgress;
+  const UploadFiles({
+    this.uploadProgress = const {},
+    this.isUploading = false,
+    this.overallProgress = 0.0,
+  });
+  UploadFiles copyWith({
+    Map<String, double>? uploadProgress,
+    bool? isUploading,
+    double? overallProgress,
+  }) {
+    return UploadFiles(
+      uploadProgress: uploadProgress ?? this.uploadProgress,
+      isUploading: isUploading ?? this.isUploading,
+      overallProgress: overallProgress ?? this.overallProgress,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        uploadProgress,
+        isUploading,
+        overallProgress,
+      ];
+}
+
+final class uploadFilesSuccess extends HomeState {
+  final String message;
+  const uploadFilesSuccess(this.message);
+  @override
+  List<Object?> get props => [message];
+}
+
+final class uploadFilesLoading extends HomeState {
+  @override
+  List<Object?> get props => [];
+}
+
+final class uploadFilesFailure extends HomeState {
+  final String message;
+  const uploadFilesFailure(this.message);
+  @override
+  List<Object?> get props => [message];
+}
+
+final class DeleteReferenceFileLoading extends HomeState {
+  const DeleteReferenceFileLoading();
+  @override
+  List<Object?> get props => [];
+}
+
+final class DeleteReferenceFileSuccess extends HomeState {
+  final String message;
+  const DeleteReferenceFileSuccess(this.message);
+  @override
+  List<Object?> get props => [message];
+}
+
+final class DeleteReferenceFileError extends HomeState {
+  final String message;
+  const DeleteReferenceFileError(this.message);
+  @override
+  List<Object?> get props => [message];
+}
+
+final class DeleteImageLoading extends HomeState {
+  const DeleteImageLoading();
+  @override
+  List<Object?> get props => [];
+}
+
+final class DeleteImageSuccess extends HomeState {
+  final String message;
+  const DeleteImageSuccess(this.message);
+  @override
+  List<Object?> get props => [message];
+}
+
+final class DeleteImageError extends HomeState {
+  final String message;
+  const DeleteImageError(this.message);
   @override
   List<Object?> get props => [message];
 }

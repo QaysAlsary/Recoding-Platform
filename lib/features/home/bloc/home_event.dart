@@ -150,6 +150,8 @@ final class EditMarkerEvent extends HomeEvent {
   final int? subAspect;
   final int? category;
   final List<XFile>? newImages;
+  final List<XFile>? newPdfs;
+  final Function(double)? onProgress; // Add progress callback
 
   const EditMarkerEvent({
     required this.locationId,
@@ -159,6 +161,8 @@ final class EditMarkerEvent extends HomeEvent {
     required this.subAspect,
     required this.category,
     this.newImages,
+    this.onProgress,
+    this.newPdfs,
   });
 
   @override
@@ -170,6 +174,8 @@ final class EditMarkerEvent extends HomeEvent {
         subAspect,
         category,
         newImages,
+        newPdfs,
+        onProgress,
       ];
 }
 
@@ -179,6 +185,14 @@ final class UpdateEditMarkerImagesEvent extends HomeEvent {
 
   @override
   List<Object?> get props => [images];
+}
+
+final class UpdateEditMarkerPdfsEvent extends HomeEvent {
+  final List<File> pdfs;
+  const UpdateEditMarkerPdfsEvent(this.pdfs);
+
+  @override
+  List<Object?> get props => [pdfs];
 }
 
 final class UpdateEditMarkerNetworkImagesEvent extends HomeEvent {
@@ -198,6 +212,7 @@ final class CreateMarkerEvent extends HomeEvent {
   final double longitude;
   final String? description;
   final List<XFile>? images;
+  final List<XFile>? pdfs;
 
   const CreateMarkerEvent({
     required this.name,
@@ -208,6 +223,7 @@ final class CreateMarkerEvent extends HomeEvent {
     required this.longitude,
     this.description,
     this.images,
+    this.pdfs,
   });
 
   @override
@@ -220,6 +236,7 @@ final class CreateMarkerEvent extends HomeEvent {
         longitude,
         description,
         images,
+        pdfs,
       ];
 }
 
@@ -262,6 +279,7 @@ final class InitEditMarkerEvent extends HomeEvent {
   final int? subAspect;
   final int? category;
   final List<File> newImages;
+  final List<File> newPdfs;
   final String? name;
 
   const InitEditMarkerEvent({
@@ -269,11 +287,13 @@ final class InitEditMarkerEvent extends HomeEvent {
     this.subAspect,
     this.category,
     this.newImages = const [],
+    this.newPdfs = const [],
     this.name,
   });
 
   @override
-  List<Object?> get props => [aspect, subAspect, category, newImages, name];
+  List<Object?> get props =>
+      [aspect, subAspect, category, newImages, newPdfs, name];
 }
 
 final class InitCreateMarkerEvent extends HomeEvent {
@@ -395,4 +415,93 @@ final class SelectFilterAspectEvent extends HomeEvent {
 final class SelectFilterSubAspectEvent extends HomeEvent {
   final String subAspectName;
   const SelectFilterSubAspectEvent(this.subAspectName);
+}
+
+final class SearchLocationEvent extends HomeEvent {
+  final String query;
+  const SearchLocationEvent(this.query);
+
+  @override
+  List<Object?> get props => [query];
+}
+
+final class TestSearchEvent extends HomeEvent {
+  final String query;
+  const TestSearchEvent(this.query);
+
+  @override
+  List<Object?> get props => [query];
+}
+
+final class SelectLocationSuggestionEvent extends HomeEvent {
+  final LocationSuggestion suggestion;
+  const SelectLocationSuggestionEvent(this.suggestion);
+
+  @override
+  List<Object?> get props => [suggestion];
+}
+
+final class ClearSearchSuggestionsEvent extends HomeEvent {
+  const ClearSearchSuggestionsEvent();
+
+  @override
+  List<Object?> get props => [];
+}
+
+final class ResetSearchEvent extends HomeEvent {
+  const ResetSearchEvent();
+
+  @override
+  List<Object?> get props => [];
+}
+
+final class UpdateCreateMarkerPdfsEvent extends HomeEvent {
+  final List<XFile> pdfs;
+  const UpdateCreateMarkerPdfsEvent(this.pdfs);
+  @override
+  List<Object?> get props => [pdfs];
+}
+
+final class RemoveCreateMarkerPdfEvent extends HomeEvent {
+  final int index;
+  const RemoveCreateMarkerPdfEvent(this.index);
+  @override
+  List<Object?> get props => [index];
+}
+
+final class UpdateUploadProgressEvent extends HomeEvent {
+  final double progress;
+  final String? fileName;
+
+  const UpdateUploadProgressEvent(this.progress, {this.fileName});
+
+  @override
+  List<Object?> get props => [progress, fileName];
+}
+
+final class EditUpdateUploadProgressEvent extends HomeEvent {
+  final double progress;
+  final String? fileName;
+
+  const EditUpdateUploadProgressEvent(this.progress, {this.fileName});
+
+  @override
+  List<Object?> get props => [progress, fileName];
+}
+
+final class DeleteReferenceFileEvent extends HomeEvent {
+  final int locationId;
+  final int fileId;
+  const DeleteReferenceFileEvent(
+      {required this.locationId, required this.fileId});
+  @override
+  List<Object?> get props => [locationId, fileId];
+}
+
+final class DeleteImageEvent extends HomeEvent {
+  final int locationId;
+  final int imageId;
+  const DeleteImageEvent({required this.locationId, required this.imageId});
+  @override
+  List<Object?> get props => [locationId, imageId];
 }

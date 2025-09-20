@@ -14,13 +14,13 @@ class LoginTexts extends StatelessWidget {
           style: Theme.of(context)
               .textTheme
               .labelMedium
-              ?.copyWith(fontSize: 50.sp),
+              ?.copyWith(fontSize: 45.sp),
         ),
-        Text("Enter your credentials to continue",
-            style: Theme.of(context)
-                .textTheme
-                .labelMedium
-                ?.copyWith(fontSize: 21.sp, color: AppColors.black073)),
+        // Text("Enter your credentials to continue",
+        //     style: Theme.of(context)
+        //         .textTheme
+        //         .labelMedium
+        //         ?.copyWith(fontSize: 20.sp, color: AppColors.black073)),
       ],
     );
   }

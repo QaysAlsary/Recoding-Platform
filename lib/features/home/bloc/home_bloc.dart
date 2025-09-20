@@ -5,9 +5,14 @@ import 'package:latlong2/latlong.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:recoding_platform_project/features/home/models/aspect_model.dart';
 import 'package:recoding_platform_project/features/home/models/category_model.dart';
+import 'package:recoding_platform_project/features/home/models/common_places.dart';
+import 'package:recoding_platform_project/features/home/models/location_suggestion_model.dart';
 import 'package:recoding_platform_project/features/home/models/marker_model.dart';
 import 'package:recoding_platform_project/features/home/models/repo/home_repo.dart';
 import 'package:recoding_platform_project/features/home/models/sub_aspect_model.dart';
+import 'package:recoding_platform_project/features/home/services/enhanced_search_service.dart';
+import 'package:recoding_platform_project/features/home/services/location_utils.dart';
+import 'package:recoding_platform_project/features/home/services/search_analytics.dart';
 import 'package:recoding_platform_project/src/core/errors/exceptions.dart';
 import '../models/location_model.dart';
 import 'dart:io';
@@ -18,6 +23,7 @@ part 'home_state.dart';
 
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final HomeRepo homeRepo;
+  LatLng? _userLocation;
 
   // Global lists for lookup
   List<AspectModel2> allAspects = [];
@@ -60,7 +66,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<ExtractCategoriesFromMarkersEvent>(_extractCategoriesFromMarkersEvent);
     on<ToggleCategorySelectionEvent>(_toggleCategorySelectionEvent);
     on<FilterMarkersByCategoriesAndNames>(_filterMarkersByCategoriesAndNames);
-
+    // on<UploadFilesEvent>(_UploadFilesEvent);
     on<ToggleMenuEvent>((event, emit) {
       final current = _getCurrentMenuState();
       final newState = current.copyWith(
@@ -152,7 +158,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           markerPosition: LatLng(position.latitude, position.longitude),
         ));
       } catch (e) {
-        print('Error getting location: $e');
+        // Error getting location
       }
     });
 
@@ -187,7 +193,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       final current = state is EditMarkerState
           ? state as EditMarkerState
           : const EditMarkerState();
-      print('SelectEditCategoryEvent: category=${event.category}');
+
       emit(current.copyWith(selectedCategory: event.category));
     });
 
@@ -196,6 +202,13 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           ? state as EditMarkerState
           : const EditMarkerState();
       emit(current.copyWith(newImages: event.images));
+    });
+
+    on<UpdateEditMarkerPdfsEvent>((event, emit) {
+      final current = state is EditMarkerState
+          ? state as EditMarkerState
+          : const EditMarkerState();
+      emit(current.copyWith(newPdfs: event.pdfs));
     });
 
     on<UpdateCreateMarkerImagesEvent>((event, emit) {
@@ -214,6 +227,24 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         updatedImages.removeAt(event.index);
       }
       emit(current.copyWith(selectedImages: updatedImages));
+    });
+
+    on<UpdateCreateMarkerPdfsEvent>((event, emit) {
+      final current = state is CreateMarkerFormState
+          ? state as CreateMarkerFormState
+          : const CreateMarkerFormState();
+      emit(current.copyWith(selectedPdfs: event.pdfs));
+    });
+
+    on<RemoveCreateMarkerPdfEvent>((event, emit) {
+      final current = state is CreateMarkerFormState
+          ? state as CreateMarkerFormState
+          : const CreateMarkerFormState();
+      final updatedPdfs = List<XFile>.from(current.selectedPdfs);
+      if (event.index >= 0 && event.index < updatedPdfs.length) {
+        updatedPdfs.removeAt(event.index);
+      }
+      emit(current.copyWith(selectedPdfs: updatedPdfs));
     });
 
     on<SelectCreateAspectEvent>((event, emit) {
@@ -253,6 +284,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         selectedSubAspect: event.subAspect,
         selectedCategory: event.category,
         newImages: event.newImages,
+        newPdfs: event.newPdfs,
         name: event.name,
         aspects: [],
         subAspects: [],
@@ -510,6 +542,78 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         selectedSubaspects: [event.subAspectName],
       ));
     });
+
+    // Search functionality with improved debouncing and caching
+    on<SearchLocationEvent>((event, emit) async {
+      final current = _getCurrentMenuState();
+      final trimmedQuery = event.query.trim();
+
+      // Clear previous suggestions and set loading immediately
+      emit(current.copyWith(
+        searchSuggestions: [],
+        isLoadingSearchSuggestions: true,
+        currentSearchQuery: trimmedQuery,
+      ));
+
+      // Reduced debounce delay for faster response
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      // Check if this is still the latest query
+      final latest = _getCurrentMenuState();
+      if (latest.currentSearchQuery != trimmedQuery) {
+        return; // Ignore if query has changed
+      }
+
+      // Perform the search
+      await _searchLocationEvent(event, emit, trimmedQuery);
+    });
+    on<SelectLocationSuggestionEvent>(_selectLocationSuggestionEvent);
+    on<ClearSearchSuggestionsEvent>((event, emit) {
+      final current = _getCurrentMenuState();
+      emit(current.copyWith(
+        searchSuggestions: [],
+        isLoadingSearchSuggestions: false,
+        // Keep the current search query so we don't lose track of what was searched
+      ));
+    });
+
+    on<ResetSearchEvent>((event, emit) {
+      final current = _getCurrentMenuState();
+      emit(current.copyWith(
+        searchSuggestions: [],
+        isLoadingSearchSuggestions: false,
+        currentSearchQuery: '', // Clear the current search query
+      ));
+    });
+
+    // Test search functionality
+    on<TestSearchEvent>((event, emit) async {
+      await _searchLocationEvent(
+          SearchLocationEvent(event.query), emit, event.query);
+    });
+
+    on<UpdateUploadProgressEvent>((event, emit) {
+      final current = state is CreateMarkerFormState
+          ? state as CreateMarkerFormState
+          : const CreateMarkerFormState();
+
+      emit(current.copyWith(
+        overallProgress: event.progress,
+        isUploading: event.progress < 1.0,
+      ));
+    });
+    on<EditUpdateUploadProgressEvent>((event, emit) {
+      final current = state is EditMarkerState
+          ? state as EditMarkerState
+          : const EditMarkerState();
+
+      emit(current.copyWith(
+        overallProgress: event.progress,
+        isUploading: event.progress < 1.0,
+      ));
+    });
+    on<DeleteReferenceFileEvent>(_deleteReferenceFileEvent);
+    on<DeleteImageEvent>(_deleteImageEvent);
   }
 
   Future<void> _fetchLocationDetailsEvent(
@@ -580,35 +684,115 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     );
   }
 
+  // Updated _editMarkerEvent method in HomeBloc
   Future<void> _editMarkerEvent(
     EditMarkerEvent event,
     Emitter<HomeState> emit,
   ) async {
-    emit(const EditMarkerLoading());
+    try {
+      // Get current state to preserve form data during loading
+      final currentState = state is EditMarkerState
+          ? state as EditMarkerState
+          : const EditMarkerState();
 
-    final result = await homeRepo.editMarker(
-      locationId: event.locationId,
-      name: event.name,
-      description: event.description,
-      aspect: event.aspect,
-      subAspect: event.subAspect,
-      category: event.category,
-      newImages: event.newImages,
-    );
+      // Step 1: Update marker basic info
+      emit(const EditMarkerLoading());
 
-    result.fold(
-      (error) {
-        emit(EditMarkerError(error));
-        if (EditMarkerState is EditMarkerState) {
-          emit(EditMarkerState(
-              selectedAspect: event.aspect,
-              selectedSubAspect: event.subAspect,
-              selectedCategory: event.category));
-        }
-      },
-      (message) => emit(EditMarkerSuccess(message)),
-    );
+      final editResult = await homeRepo.editMarker(
+        locationId: event.locationId,
+        name: event.name,
+        description: event.description,
+        aspect: event.aspect,
+        subAspect: event.subAspect,
+        category: event.category,
+      );
+
+      // Handle edit result
+      await editResult.fold(
+        (error) async {
+          emit(EditMarkerError(error));
+          return;
+        },
+        (editMessage) async {
+          // Step 2: Check if there are files to upload
+          final hasNewImages =
+              event.newImages != null && event.newImages!.isNotEmpty;
+          final hasNewPdfs = event.newPdfs != null && event.newPdfs!.isNotEmpty;
+
+          if (hasNewImages || hasNewPdfs) {
+            // Show upload progress state
+            emit(currentState.copyWith(
+              isUploading: true,
+              overallProgress: 0.0,
+            ));
+
+            // Progress callback
+            void onProgress(double progress) {
+              // Emit progress updates while maintaining EditMarkerState
+              final current = state is EditMarkerState
+                  ? state as EditMarkerState
+                  : currentState;
+
+              emit(current.copyWith(
+                overallProgress: progress,
+                isUploading: progress < 1.0,
+              ));
+
+              // Also call the optional callback
+              if (event.onProgress != null) {
+                event.onProgress!(progress);
+              }
+            }
+
+            // Step 3: Upload files
+            final uploadResult =
+                await homeRepo.uploadImagesFilestoExistingMarker(
+              locationId: event.locationId,
+              newImages: event.newImages ?? [],
+              newPdfs: event.newPdfs ?? [],
+              onProgress: onProgress,
+            );
+
+            // Handle upload result
+            uploadResult.fold(
+              (error) => emit(EditMarkerError(error)),
+              (uploadMessage) {
+                // Both operations succeeded
+                emit(EditMarkerSuccess("$editMessage\n$uploadMessage"));
+              },
+            );
+          } else {
+            // No files to upload, just return edit success
+            emit(EditMarkerSuccess(editMessage));
+          }
+        },
+      );
+    } catch (e) {
+      emit(EditMarkerError('Failed to update marker: ${e.toString()}'));
+    }
   }
+
+  // Future<void> _UploadFilesEvent(
+  //     UploadFilesEvent event, Emitter<HomeState> emit) async {
+  //   try {
+  //     emit(uploadFilesLoading());
+  //     final result = await homeRepo.uploadImagesFilestoExistingMarker(
+  //         locationId: event.locationId,
+  //         newImages: event.newImages,
+  //         newPdfs: event.newPdfs);
+
+  //     result.fold(
+  //       (error) {
+  //         emit(uploadFilesFailure(error));
+  //       },
+  //       (message) => emit(uploadFilesSuccess(message)),
+  //     );
+  //   } on ServerException catch (e) {
+  //     emit(uploadFilesFailure(e.errModel.errorMessage));
+  //   } catch (e) {
+  //     emit(uploadFilesFailure(e.toString()));
+  //   }
+  // }
 
   Future<void> _createMarkerEvent(
     CreateMarkerEvent event,
@@ -619,33 +803,37 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           ? state as CreateMarkerFormState
           : const CreateMarkerFormState();
 
-      // final menuState = state is MenuState ? state as MenuState : null;
-      // final markerPosition = menuState?.markerPosition;
-
-      // if (markerPosition == null) {
-      //   emit(const CreateMarkerError('Please select a location on the map'));
-      //   emit(currentState);
-      //   return;
-      // }
-
       emit(const CreateMarkerLoading());
+      // Start upload
+      emit(currentState.copyWith(
+        isUploading: true,
+        overallProgress: 0.0,
+      ));
+
+      // Create progress callback
+      void onProgress(double progress) {
+        add(UpdateUploadProgressEvent(progress));
+      }
 
       final result = await homeRepo.createMarker(
-        name: event.name,
-        aspectId: event.aspectId,
-        subAspectId: event.subAspectId,
-        categoryId: event.categoryId,
-        latitude: event.latitude,
-        longitude: event.longitude,
-        description: event.description,
-        images: event.images,
-      );
+          name: event.name,
+          aspectId: event.aspectId,
+          subAspectId: event.subAspectId,
+          categoryId: event.categoryId,
+          latitude: event.latitude,
+          longitude: event.longitude,
+          description: event.description,
+          images: event.images,
+          pdfs: event.pdfs,
+          onProgress: onProgress);
 
       result.fold(
         (error) {
           emit(CreateMarkerError(error));
-          // Preserve the form state including dropdown selections
-          emit(currentState);
+          emit(currentState.copyWith(
+            isUploading: false,
+            overallProgress: 0.0,
+          ));
         },
         (message) => emit(CreateMarkerSuccess(message)),
       );
@@ -655,16 +843,17 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           : const CreateMarkerFormState();
 
       emit(CreateMarkerError(e.errModel.errorMessage));
-      // Preserve the form state including dropdown selections
       emit(currentState);
     } catch (e) {
       final currentState = state is CreateMarkerFormState
           ? state as CreateMarkerFormState
           : const CreateMarkerFormState();
 
-      emit(CreateMarkerError('Failed to create marker: ${e.toString()}'));
-      // Preserve the form state including dropdown selections
-      emit(currentState);
+      emit(CreateMarkerError('Failed to create marker:  [0m${e.toString()}'));
+      emit(currentState.copyWith(
+        isUploading: false,
+        overallProgress: 0.0,
+      ));
     }
   }
 
@@ -902,5 +1091,213 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       searchName: name,
       filteredMarkers: filtered,
     ));
+  }
+
+  // Enhanced search with analytics and caching
+  Future<void> _searchLocationEvent(
+    SearchLocationEvent event,
+    Emitter<HomeState> emit,
+    String trimmedQuery,
+  ) async {
+    final current = _getCurrentMenuState();
+    final startTime = DateTime.now();
+
+    if (trimmedQuery.isEmpty) {
+      emit(current.copyWith(
+        searchSuggestions: [],
+        isLoadingSearchSuggestions: false,
+      ));
+      return;
+    }
+
+    // Emit loading state first
+    emit(current.copyWith(
+      searchSuggestions: [],
+      isLoadingSearchSuggestions: true,
+    ));
+
+    try {
+      // Use the enhanced search service
+      final suggestions = await EnhancedSearchService.searchPlaces(
+        query: event.query,
+        limit: 8, // Reasonable number for mobile UI
+      );
+
+      final responseTime = DateTime.now().difference(startTime);
+
+      // Track analytics
+      await SearchAnalytics.trackSearch(
+          trimmedQuery, suggestions.length, responseTime);
+
+      // Only update state if this is still the latest query
+      final latest = _getCurrentMenuState();
+      if (latest.currentSearchQuery != trimmedQuery) {
+        return; // This response is for an old query, ignore it
+      }
+
+      if (suggestions.isEmpty) {
+        // Try fallback with common places if no results
+        final fallbackSuggestions = CommonPlaces.getCommonPlaces(event.query);
+
+        emit(latest.copyWith(
+          searchSuggestions: fallbackSuggestions,
+          isLoadingSearchSuggestions: false,
+        ));
+        return;
+      }
+
+      // Remove duplicates and sort by relevance
+      final uniqueSuggestions =
+          _removeDuplicatesAndSort(suggestions, event.query);
+
+      // Add distance information if user location is available
+      List<LocationSuggestion> enrichedSuggestions = uniqueSuggestions;
+      if (_userLocation != null) {
+        enrichedSuggestions =
+            await _addDistanceInfo(uniqueSuggestions, _userLocation!);
+      }
+
+      emit(latest.copyWith(
+        searchSuggestions: enrichedSuggestions,
+        isLoadingSearchSuggestions: false,
+      ));
+    } catch (e) {
+      final latest = _getCurrentMenuState();
+      if (latest.currentSearchQuery != trimmedQuery) {
+        return;
+      }
+
+      // Try fallback with common places on error
+      final fallbackSuggestions = CommonPlaces.getCommonPlaces(event.query);
+
+      emit(latest.copyWith(
+        searchSuggestions: fallbackSuggestions,
+        isLoadingSearchSuggestions: false,
+      ));
+    }
+  }
+
+  // Helper method to remove duplicates and sort by relevance
+  List<LocationSuggestion> _removeDuplicatesAndSort(
+    List<LocationSuggestion> suggestions,
+    String query,
+  ) {
+    // Remove duplicates based on coordinates and name
+    final Map<String, LocationSuggestion> uniqueMap = {};
+
+    for (final suggestion in suggestions) {
+      final key =
+          '${suggestion.name}_${suggestion.coordinates.latitude.toStringAsFixed(6)}_${suggestion.coordinates.longitude.toStringAsFixed(6)}';
+      if (!uniqueMap.containsKey(key)) {
+        uniqueMap[key] = suggestion;
+      }
+    }
+
+    final unique = uniqueMap.values.toList();
+
+    // Sort by relevance: exact matches first, then partial matches
+    unique.sort((a, b) {
+      final aExact = a.name.toLowerCase() == query.toLowerCase();
+      final bExact = b.name.toLowerCase() == query.toLowerCase();
+
+      if (aExact && !bExact) return -1;
+      if (!aExact && bExact) return 1;
+
+      final aStartsWith = a.name.toLowerCase().startsWith(query.toLowerCase());
+      final bStartsWith = b.name.toLowerCase().startsWith(query.toLowerCase());
+
+      if (aStartsWith && !bStartsWith) return -1;
+      if (!aStartsWith && bStartsWith) return 1;
+
+      // If both are similar, prefer shorter names (likely more specific)
+      return a.name.length.compareTo(b.name.length);
+    });
+
+    return unique;
+  }
+
+  // Add method for reverse geocoding (when user taps on map)
+  Future<void> reverseGeocode(LatLng coordinates) async {
+    try {
+      final suggestion = await EnhancedSearchService.reverseGeocode(
+        coordinates: coordinates,
+      );
+
+      if (suggestion != null) {
+        // You can emit this info or use it to update marker details
+      }
+    } catch (e) {}
+  }
+
+  void _selectLocationSuggestionEvent(
+    SelectLocationSuggestionEvent event,
+    Emitter<HomeState> emit,
+  ) {
+    final current = _getCurrentMenuState();
+
+    // Clear search suggestions and update marker position
+    emit(current.copyWith(
+      searchSuggestions: [],
+      isLoadingSearchSuggestions: false,
+      markerPosition: event.suggestion.coordinates,
+    ));
+  }
+
+  Future<void> _deleteReferenceFileEvent(
+    DeleteReferenceFileEvent event,
+    Emitter<HomeState> emit,
+  ) async {
+    emit(const DeleteReferenceFileLoading());
+    final result = await homeRepo.deleteReferenceFile(
+        locationId: event.locationId, fileId: event.fileId);
+    result.fold(
+      (error) => emit(DeleteReferenceFileError(error)),
+      (message) => emit(DeleteReferenceFileSuccess(message)),
+    );
+  }
+
+  Future<void> _deleteImageEvent(
+    DeleteImageEvent event,
+    Emitter<HomeState> emit,
+  ) async {
+    emit(const DeleteImageLoading());
+    final result = await homeRepo.deleteImage(
+        locationId: event.locationId, imageId: event.imageId);
+    result.fold(
+      (error) => emit(DeleteImageError(error)),
+      (message) => emit(DeleteImageSuccess(message)),
+    );
+  }
+
+  // Add distance information to suggestions
+  Future<List<LocationSuggestion>> _addDistanceInfo(
+      List<LocationSuggestion> suggestions, LatLng userLocation) async {
+    return suggestions.map((suggestion) {
+      final distance =
+          LocationUtils.calculateDistance(userLocation, suggestion.coordinates);
+      final formattedDistance = LocationUtils.formatDistance(distance);
+
+      // Create enhanced suggestion with distance info
+      return LocationSuggestion(
+        name: suggestion.name,
+        address: suggestion.address?.isEmpty == true
+            ? formattedDistance
+            : '${suggestion.address} • $formattedDistance',
+        city: suggestion.city,
+        country: suggestion.country,
+        coordinates: suggestion.coordinates,
+        type: suggestion.type,
+      );
+    }).toList();
+  }
+
+  // Update user location
+  void updateUserLocation(LatLng location) {
+    _userLocation = location;
+  }
+
+  @override
+  Future<void> close() {
+    return super.close();
   }
 }
