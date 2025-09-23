@@ -77,6 +77,29 @@ class _MapTilerWidgetState extends State<MapTilerWidget>
     controller.dispose();
   }
 
+  // Animate map movement to a new center and zoom
+  Future<void> _animateMapMove(LatLng targetCenter, double targetZoom) async {
+    final startCenter = _mapController.camera.center;
+    final startZoom = _mapController.camera.zoom;
+    final duration = const Duration(milliseconds: 600);
+    final controller = AnimationController(vsync: this, duration: duration);
+    final latTween =
+        Tween<double>(begin: startCenter.latitude, end: targetCenter.latitude);
+    final lngTween = Tween<double>(
+        begin: startCenter.longitude, end: targetCenter.longitude);
+    final zoomTween = Tween<double>(begin: startZoom, end: targetZoom);
+    final animation =
+        CurvedAnimation(parent: controller, curve: Curves.easeInOut);
+    controller.addListener(() {
+      final lat = latTween.evaluate(animation);
+      final lng = lngTween.evaluate(animation);
+      final zoom = zoomTween.evaluate(animation);
+      _mapController.move(LatLng(lat, lng), zoom);
+    });
+    await controller.forward();
+    controller.dispose();
+  }
+
   // Calculate distance between two points in meters
   double _calculateDistance(LatLng point1, LatLng point2) {
     const double earthRadius = 6371000; // Earth radius in meters
@@ -175,7 +198,8 @@ class _MapTilerWidgetState extends State<MapTilerWidget>
           }
 
           // Move to the location with proper zoom
-          _mapController.move(newPosition, 18);
+          // _mapController.move(newPosition, 18);
+          _animateMapMove(newPosition, 17);
 
           // Ensure the map is properly refreshed and gestures are enabled
           Future.delayed(const Duration(milliseconds: 100), () {

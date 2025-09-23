@@ -122,16 +122,16 @@ class _MarkerDetailsPanelState extends State<MarkerDetailsPanel> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: BlocConsumer<HomeBloc, HomeState>(
-        listener: (context, state) => _handleStateChanges(context, state),
-        builder: (context, state) {
-          if (_pendingNavigation) {
-            return _buildDeleteLoadingState();
-          }
-          return _buildBody(state);
-        },
-      ),
-    );
+        body: SafeArea(
+            child: BlocConsumer<HomeBloc, HomeState>(
+      listener: (context, state) => _handleStateChanges(context, state),
+      builder: (context, state) {
+        if (_pendingNavigation) {
+          return _buildDeleteLoadingState();
+        }
+        return _buildBody(state);
+      },
+    )));
   }
 
   void _handleStateChanges(BuildContext context, HomeState state) {
@@ -541,7 +541,7 @@ class _MarkerDetailsPanelState extends State<MarkerDetailsPanel> {
       child: Stack(
         children: [
           Center(
-            child: Icon(fileIcon, color: Colors.blue, size: 40),
+            child: Icon(fileIcon, color: Colors.red, size: 40),
           ),
           Positioned(
             bottom: 8,

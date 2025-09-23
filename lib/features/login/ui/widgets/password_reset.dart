@@ -31,7 +31,8 @@ class _EmailVerificationScreenState extends State<PasswordReset> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: BlocListener<LoginBloc, LoginState>(
+        body: SafeArea(
+      child: BlocListener<LoginBloc, LoginState>(
         listener: (context, state) {
           if (state is ForgotPasswordSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -167,6 +168,6 @@ class _EmailVerificationScreenState extends State<PasswordReset> {
           ),
         ),
       ),
-    );
+    ));
   }
 }

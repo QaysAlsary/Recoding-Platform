@@ -72,7 +72,8 @@ class _EmailVerificationScreenState extends State<VerifyEmailReg> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: BlocConsumer<RegisterBloc, RegisterState>(
+        body: SafeArea(
+      child: BlocConsumer<RegisterBloc, RegisterState>(
         listener: (context, state) {
           if (state is VerifyEmailRegisterFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -242,6 +243,6 @@ class _EmailVerificationScreenState extends State<VerifyEmailReg> {
           );
         },
       ),
-    );
+    ));
   }
 }

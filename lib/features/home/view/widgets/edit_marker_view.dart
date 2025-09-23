@@ -74,6 +74,22 @@ class _EditMarkerViewState extends State<EditMarkerView> {
   //   }
   // }
 
+  // Max file sizes in bytes
+  static const int maxImageSize = 10 * 1024 * 1024; // 10MB
+  static const int maxPdfTxtSize = 20 * 1024 * 1024; // 20MB
+  static const String recommendedSizeMsg =
+      'Recommended: Images ≤ 2MB, PDF/TXT ≤ 5MB for best performance.';
+
+  void _showSizeError(String type, int maxMB) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+            '$type file is too large. Max allowed is $maxMB MB. $recommendedSizeMsg'),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
   Future<void> _handleImageSelection(BuildContext context) async {
     HapticFeedback.selectionClick();
     final ImagePicker picker = ImagePicker();
@@ -87,6 +103,15 @@ class _EditMarkerViewState extends State<EditMarkerView> {
           ext.endsWith('.jpeg') ||
           ext.endsWith('.png');
     }).toList();
+    // Check size
+    for (final img in filteredImages) {
+      final file = File(img.path);
+      final size = await file.length();
+      if (size > maxImageSize) {
+        _showSizeError('Image', 10);
+        return;
+      }
+    }
     if (filteredImages.isNotEmpty && mounted) {
       final currentImages = (homeBloc.state is EditMarkerState)
           ? (homeBloc.state as EditMarkerState)
@@ -114,6 +139,12 @@ class _EditMarkerViewState extends State<EditMarkerView> {
       allowMultiple: true,
     );
     if (result != null && result.files.isNotEmpty && mounted) {
+      for (final file in result.files) {
+        if (file.size > maxPdfTxtSize) {
+          _showSizeError('PDF/TXT', 20);
+          return;
+        }
+      }
       final currentFiles = (homeBloc.state is EditMarkerState)
           ? (homeBloc.state as EditMarkerState)
               .newPdfs
@@ -169,6 +200,12 @@ class _EditMarkerViewState extends State<EditMarkerView> {
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
                     ),
+                  ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    recommendedSizeMsg,
+                    style: TextStyle(fontSize: 13.sp, color: Colors.grey[600]),
+                    textAlign: TextAlign.center,
                   ),
                   SizedBox(height: 20.h),
                   Container(
@@ -380,7 +417,8 @@ class _EditMarkerViewState extends State<EditMarkerView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: BlocConsumer<HomeBloc, HomeState>(
+        body: SafeArea(
+      child: BlocConsumer<HomeBloc, HomeState>(
         listener: (context, state) {
           if (state is EditMarkerSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -575,7 +613,7 @@ class _EditMarkerViewState extends State<EditMarkerView> {
           );
         },
       ),
-    );
+    ));
   }
 
   Widget _buildFormFields(

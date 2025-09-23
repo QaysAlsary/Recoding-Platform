@@ -3,6 +3,7 @@ import 'package:recoding_platform_project/features/login/data/models/login_respo
 import 'package:recoding_platform_project/src/core/api/api_consumer.dart';
 import 'package:recoding_platform_project/src/core/api/dio_consumer.dart';
 import 'package:recoding_platform_project/src/core/api/end_ponits.dart';
+import 'package:recoding_platform_project/src/core/errors/exceptions.dart';
 import 'package:recoding_platform_project/src/core/storage/secure_storage_service.dart';
 import 'package:recoding_platform_project/src/di/session.dart';
 import 'package:recoding_platform_project/src/routing/router.dart';
@@ -29,28 +30,34 @@ class LoginRepository {
 
         // Save user data using the unified storage service
         await SecureStorageService.saveUserEmail(email);
-        if (loginResponse.accessToken != null &&
-            loginResponse.accessToken!.isNotEmpty) {
-          await SecureStorageService.saveUserToken(loginResponse.accessToken!);
-        }
         if (loginResponse.user != null) {
           await SecureStorageService.saveUserId(loginResponse.user!.id);
         }
 
-        if (isChecked) {
-          // Token is already saved above, just clear session token
-          SessionManager().clearToken();
-        } else {
-          // Save token in memory only for the session
-          SessionManager().setToken(loginResponse.accessToken!);
+        if (loginResponse.accessToken != null &&
+            loginResponse.accessToken!.isNotEmpty) {
+          if (isChecked) {
+            // Persist token for future launches
+            await SecureStorageService.saveUserToken(
+                loginResponse.accessToken!);
+            SessionManager().clearToken();
+            print(SecureStorageService.getUserToken());
+            print("isChecked");
+          } else {
+            // Session-only token (do not persist)
+            SessionManager().setToken(loginResponse.accessToken!);
+            await SecureStorageService.deleteUserToken();
+            print(SecureStorageService.getUserToken());
+            print("is not Checked");
+          }
         }
 
         // goRouter.go(Routes.home);
         return Right(loginResponse);
       }
       return Left('Login failed');
-    } catch (error) {
-      return Left(error.toString());
+    } on ServerException catch (e) {
+      return Left(e.errModel.errorMessage);
     }
   }
 
@@ -69,7 +76,6 @@ class LoginRepository {
       if (response != null) {
         // Handle different response types
         if (response is Map<String, dynamic>) {
-          
           final message =
               response['message'] ?? 'Reset email sent successfully';
           return Right(message);
@@ -80,8 +86,8 @@ class LoginRepository {
         }
       }
       return Left('Failed to send reset email');
-    } catch (error) {
-      return Left(error.toString());
+    } on ServerException catch (e) {
+      return Left(e.errModel.errorMessage);
     }
   }
 
@@ -90,7 +96,7 @@ class LoginRepository {
       String email, String verificationCode) async {
     try {
       final response = await _apiConsumer.post(
-        EndPoint.verifyCode,
+        EndPoint.verifyResetPasswordCode,
         isFromData: true,
         data: {
           'email': email,
@@ -100,21 +106,22 @@ class LoginRepository {
           'Accept': 'application/json',
         },
       );
-                        final loginResponse = LoginResponse.fromJson(response);
+      final loginResponse = LoginResponse.fromJson(response);
 
       if (response != null) {
         if (response is Map<String, dynamic>) {
           final message = response['message'] ?? 'Code verified successfully';
 
-            // Save user data using the unified storage service
-        await SecureStorageService.saveUserEmail(email);
-        if (loginResponse.accessToken != null &&
-            loginResponse.accessToken!.isNotEmpty) {
-          await SecureStorageService.saveUserToken(loginResponse.accessToken!);
-        }
-        if (loginResponse.user != null) {
-          await SecureStorageService.saveUserId(loginResponse.user!.id);
-        }
+          // Save user data using the unified storage service
+          await SecureStorageService.saveUserEmail(email);
+          if (loginResponse.accessToken != null &&
+              loginResponse.accessToken!.isNotEmpty) {
+            await SecureStorageService.saveUserToken(
+                loginResponse.accessToken!);
+          }
+          if (loginResponse.user != null) {
+            await SecureStorageService.saveUserId(loginResponse.user!.id);
+          }
 
           return Right(message);
         } else if (response is String) {
@@ -124,11 +131,54 @@ class LoginRepository {
         }
       }
       return Left('Failed to verify code');
-    } catch (error) {
-      return Left(error.toString());
+    } on ServerException catch (e) {
+      return Left(e.errModel.errorMessage);
     }
   }
 
+  Future<Either<String, LoginResponse>> verifyResetPasswordCode(
+      String email, String verificationCode) async {
+    try {
+      final response = await _apiConsumer.post(
+        EndPoint.verifyResetPasswordCode,
+        isFromData: true,
+        data: {
+          'email': email,
+          'reset_password_code': verificationCode,
+        },
+        headers: {
+          'Accept': 'application/json',
+        },
+      );
+      final loginResponse = LoginResponse.fromJson(response);
+
+      if (response != null) {
+        if (response is Map<String, dynamic>) {
+          final message = response['message'] ?? 'Code verified successfully';
+
+          // Save user data using the unified storage service
+          await SecureStorageService.saveUserEmail(email);
+          if (loginResponse.accessToken != null &&
+              loginResponse.accessToken!.isNotEmpty) {
+            await SecureStorageService.saveUserToken(
+                loginResponse.accessToken!);
+          }
+          if (loginResponse.user != null) {
+            await SecureStorageService.saveUserId(loginResponse.user!.id);
+          }
+
+          return Right(message);
+        } else if (response is String) {
+          return Right(loginResponse);
+        } else {
+          return Right(loginResponse);
+        }
+      }
+      return Left('Failed to verify code');
+    } on ServerException catch (e) {
+      return Left(e.errModel.errorMessage);
+    }
+  }
   // // API 3: Resend Code
   // Future<Either<String, String>> resendCode(String email) async {
   //   try {
@@ -186,8 +236,8 @@ class LoginRepository {
         }
       }
       return Left('Failed to reset password');
-    } catch (error) {
-      return Left(error.toString());
+    } on ServerException catch (e) {
+      return Left(e.errModel.errorMessage);
     }
   }
 }

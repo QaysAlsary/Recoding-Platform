@@ -4,9 +4,9 @@ class EndPoint {
   // static String imageBaseUrl = "http://192.168.1.105:8000/";
 
   // static String baseUrl = "http://192.168.1.105:8000/api/";
-  static String baseUrl = "http://192.168.1.2:8000/api/";
-  static String imageBaseUrl = "http://192.168.1.2:8000/";
-  static String fileBaseUrl = 'http://192.168.1.2:8000/';
+  static String baseUrl = "http://192.168.1.3:8000/api/";
+  static String imageBaseUrl = "http://192.168.1.3:8000/";
+  static String fileBaseUrl = 'http://192.168.1.3:8000/';
   // static String baseUrl = "http://127.0.0.1:8000/api/";
   // static String imageBaseUrl = "http://127.0.0.1:8000/";
 
@@ -18,7 +18,9 @@ class EndPoint {
   static String getAspect = 'aspects';
   static String uploadFiles = 'upload-files';
   static String changeEmail = 'change-email';
-  static String verifyCode = 'verify-reset-code-for-mob';
+  static String verifyCode = 'verify-code';
+  static String verifyResetPasswordCode = 'verify-reset-code-for-mob';
+
   static String changePassword = 'change-password';
 
   // Password Reset Endpoints

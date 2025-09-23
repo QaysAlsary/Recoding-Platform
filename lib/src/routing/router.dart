@@ -56,7 +56,7 @@ final goRouter = GoRouter(
         state.matchedLocation == Routes.verifyEmailReg;
 
     // If we have a token and we're on login/register, redirect to home
-    if (token != null && (isLoginRoute || isRegisterRoute)) {
+    if ( token != null && (isLoginRoute || isRegisterRoute)) {
       return Routes.home;
     }
 

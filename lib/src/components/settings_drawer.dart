@@ -45,7 +45,8 @@ class _SettingsDrawerState extends State<SettingsDrawer> {
 
   @override
   Widget build(BuildContext context) {
-    return Drawer(
+    return SafeArea(
+        child: Drawer(
       backgroundColor: const Color(0xFFF8F9FA),
       child: SafeArea(
         child: Column(
@@ -70,7 +71,7 @@ class _SettingsDrawerState extends State<SettingsDrawer> {
           ],
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildProfileHeader() {
@@ -91,7 +92,7 @@ class _SettingsDrawerState extends State<SettingsDrawer> {
           userPosition = user.position.isNotEmpty ? user.position : null;
           userDepartment = user.department.isNotEmpty ? user.department : null;
           userProfileImage =
-              user.profile_image!.isNotEmpty ? user.profile_image : null;
+              user.profile_image?.isEmpty ?? true ? user.profile_image : null;
         }
 
         return Container(

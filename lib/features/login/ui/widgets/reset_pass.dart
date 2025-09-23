@@ -42,7 +42,8 @@ class _ResetPassState extends State<ResetPass> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: BlocListener<LoginBloc, LoginState>(
+        body: SafeArea(
+      child: BlocListener<LoginBloc, LoginState>(
         listener: (context, state) {
           if (state is ResetPasswordSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -213,6 +214,6 @@ class _ResetPassState extends State<ResetPass> {
           ),
         ),
       ),
-    );
+    ));
   }
 }

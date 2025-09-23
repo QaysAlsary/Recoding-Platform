@@ -59,16 +59,15 @@ class _EmailVerificationScreenState extends State<VerifyEmail> {
 
   void _handleResendCode() {
     if (_canResend) {
-      context
-          .read<LoginBloc>()
-          .add(ResendCodeRequested(email: widget.email));
+      context.read<LoginBloc>().add(ResendCodeRequested(email: widget.email));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: BlocListener<LoginBloc, LoginState>(
+        body: SafeArea(
+      child: BlocListener<LoginBloc, LoginState>(
         listener: (context, state) {
           if (state is VerifyCodeSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -286,6 +285,6 @@ class _EmailVerificationScreenState extends State<VerifyEmail> {
           ),
         ),
       ),
-    );
+    ));
   }
 }

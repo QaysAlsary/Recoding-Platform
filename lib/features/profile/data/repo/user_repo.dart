@@ -106,7 +106,7 @@ class UserRepo {
   }) async {
     try {
       // Use the email passed as parameter
-
+      
       final response = await api.post(
         EndPoint.baseUrl + EndPoint.verifyCode,
         isFromData: true,
@@ -123,7 +123,7 @@ class UserRepo {
       return Left(e.errModel.errorMessage);
     }
   }
-
+ 
   Future<Either<String, String>> changePassword({
     required String password,
     required String passwordConfirmation,

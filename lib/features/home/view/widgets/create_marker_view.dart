@@ -49,6 +49,22 @@ class _CreateMarkerViewState extends State<CreateMarkerView> {
     super.dispose();
   }
 
+  // Max file sizes in bytes
+  static const int maxImageSize = 10 * 1024 * 1024; // 10MB
+  static const int maxPdfTxtSize = 20 * 1024 * 1024; // 20MB
+  static const String recommendedSizeMsg =
+      'Recommended: Images ≤ 2MB, PDF/TXT ≤ 5MB for best performance.';
+
+  void _showSizeError(String type, int maxMB) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+            '$type file is too large. Max allowed is $maxMB MB. $recommendedSizeMsg'),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
   Future<void> _handleImageSelection() async {
     HapticFeedback.selectionClick();
     final ImagePicker picker = ImagePicker();
@@ -62,12 +78,20 @@ class _CreateMarkerViewState extends State<CreateMarkerView> {
           ext.endsWith('.jpeg') ||
           ext.endsWith('.png');
     }).toList();
+    // Check size
+    for (final img in filteredImages) {
+      final file = File(img.path);
+      final size = await file.length();
+      if (size > maxImageSize) {
+        _showSizeError('Image', 10);
+        return;
+      }
+    }
     if (filteredImages.isNotEmpty && mounted) {
       final currentImages = (homeBloc.state is CreateMarkerFormState)
           ? (homeBloc.state as CreateMarkerFormState).selectedImages
           : <XFile>[];
       final updatedImages = [...currentImages, ...filteredImages];
-
       if (mounted) {
         homeBloc.add(UpdateCreateMarkerImagesEvent(updatedImages));
       }
@@ -83,6 +107,12 @@ class _CreateMarkerViewState extends State<CreateMarkerView> {
       allowMultiple: true,
     );
     if (result != null && result.files.isNotEmpty && mounted) {
+      for (final file in result.files) {
+        if (file.size > maxPdfTxtSize) {
+          _showSizeError('PDF/TXT', 20);
+          return;
+        }
+      }
       final currentFiles = (homeBloc.state is CreateMarkerFormState)
           ? (homeBloc.state as CreateMarkerFormState).selectedPdfs
           : <XFile>[];
@@ -129,7 +159,8 @@ class _CreateMarkerViewState extends State<CreateMarkerView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: BlocConsumer<HomeBloc, HomeState>(
+        body: SafeArea(
+      child: BlocConsumer<HomeBloc, HomeState>(
         listener: (context, state) {
           if (state is CreateMarkerSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -354,7 +385,7 @@ class _CreateMarkerViewState extends State<CreateMarkerView> {
               ));
         },
       ),
-    );
+    ));
   }
 
   Widget _buildInputField({
@@ -410,6 +441,12 @@ class _CreateMarkerViewState extends State<CreateMarkerView> {
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
                     ),
+                  ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    recommendedSizeMsg,
+                    style: TextStyle(fontSize: 13.sp, color: Colors.grey[600]),
+                    textAlign: TextAlign.center,
                   ),
                   SizedBox(height: 20.h),
                   Container(

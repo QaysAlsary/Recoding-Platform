@@ -18,13 +18,13 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
   ) async {
     emit(RegisterLoading());
 
-    try {
-      final registerResponse = await registerRepository.register(
-          event.name, event.email, event.password, event.password_confirmation);
-      emit(RegisterSuccess(registerResponse));
-    } catch (error) {
-      emit(RegisterFailure(error.toString()));
-    }
+    final result = await registerRepository.register(
+        event.name, event.email, event.password, event.password_confirmation);
+
+    result.fold(
+      (error) => emit(RegisterFailure(error)),
+      (registerResponse) => emit(RegisterSuccess(registerResponse)),
+    );
   }
 
   Future<void> _onVerifyEmailCodeRegister(

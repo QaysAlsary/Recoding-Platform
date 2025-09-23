@@ -85,6 +85,17 @@ class SecureStorageService {
     }
   }
 
+  // Delete user token only
+  static Future<void> deleteUserToken() async {
+    try {
+      await storage.delete(key: _userTokenKey);
+    } catch (e) {
+      if (kDebugMode) {}
+      // Optionally clear from fallback storage as well
+      await FallbackStorageService.saveUserToken('');
+    }
+  }
+
   // Clear all user data
   static Future<void> clearUserData() async {
     try {

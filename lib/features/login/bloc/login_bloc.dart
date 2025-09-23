@@ -91,7 +91,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     emit(VerifyCodeLoading());
 
     try {
-      final result = await loginRepository.verifyCode(
+      final result = await loginRepository.verifyResetPasswordCode(
         event.email,
         event.verificationCode,
       );
