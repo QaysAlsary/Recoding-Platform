@@ -114,7 +114,7 @@ class ProfileViewBody extends StatelessWidget {
                         color: Colors.white,
                         child: Padding(
                           padding: EdgeInsets.symmetric(
-                              horizontal: 24.w, vertical: 24.h),
+                              horizontal: 10.w, vertical: 24.h),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
@@ -237,7 +237,7 @@ class ProfileViewBody extends StatelessWidget {
                                           .bodyLarge
                                           ?.copyWith(
                                             color: Colors.grey.shade700,
-                                            fontSize: 16.sp,
+                                            fontSize: 15.sp,
                                           ),
                                     ),
                                     SizedBox(height: 4.h),
@@ -248,7 +248,7 @@ class ProfileViewBody extends StatelessWidget {
                                           .bodyMedium
                                           ?.copyWith(
                                             color: Colors.grey.shade500,
-                                            fontSize: 15.sp,
+                                            fontSize: 13.sp,
                                           ),
                                     ),
                                   ],
