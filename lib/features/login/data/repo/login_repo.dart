@@ -41,14 +41,10 @@ class LoginRepository {
             await SecureStorageService.saveUserToken(
                 loginResponse.accessToken!);
             SessionManager().clearToken();
-            print(SecureStorageService.getUserToken());
-            print("isChecked");
           } else {
             // Session-only token (do not persist)
             SessionManager().setToken(loginResponse.accessToken!);
             await SecureStorageService.deleteUserToken();
-            print(SecureStorageService.getUserToken());
-            print("is not Checked");
           }
         }
 
