@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:recoding_platform_project/src/components/input_text_form_field.dart';
 
 class EmailAndPassword extends StatefulWidget {
-  EmailAndPassword(
+  const EmailAndPassword(
       {super.key,
       required this.emailController,
       required this.passwordController});

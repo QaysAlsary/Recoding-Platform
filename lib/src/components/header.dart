@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:recoding_platform_project/src/themes/app_images.dart';
 
 class Header extends StatelessWidget {
@@ -30,8 +31,10 @@ class Header extends StatelessWidget {
                 headerText ?? '',
                 style: TextStyle(
                   color: Colors.black,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 34.sp,
+                  fontFamily: 'Oswald',
+
+                  // fontWeight: FontWeight.w400
                 ),
                 textAlign: TextAlign.center,
               ),

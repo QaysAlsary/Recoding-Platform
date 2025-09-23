@@ -1,3 +1,5 @@
+import 'package:image_picker/image_picker.dart';
+
 class User {
   final int id;
   final String name;
@@ -5,10 +7,10 @@ class User {
   final String position;
   final String department;
   final String layer;
-  final DateTime createdAt;
-  final DateTime updatedAt;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
   final int isVerified;
-
+  final String? profile_image;
   User({
     required this.id,
     required this.name,
@@ -19,19 +21,25 @@ class User {
     required this.createdAt,
     required this.updatedAt,
     required this.isVerified,
+    this.profile_image,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'],
+      id: json['id'] ?? 0,
       name: json['name'],
       email: json['email'],
-      position: json['position'],
-      department: json['department'],
+      position: json['position'] ?? "",
+      department: json['department'] ?? "",
       layer: json['layer'],
-      createdAt: DateTime.parse(json['created_at']),
-      updatedAt: DateTime.parse(json['updated_at']),
-      isVerified: json['is_verified'],
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'])
+          : null,
+      updatedAt: json['updated_at'] != null
+          ? DateTime.tryParse(json['updated_at'])
+          : null,
+      isVerified: json['is_verified'] ?? 0,
+      profile_image: json['profile_image'],
     );
   }
 }

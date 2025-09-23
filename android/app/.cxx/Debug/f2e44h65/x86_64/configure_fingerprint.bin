@@ -2,6 +2,35 @@ C/C++ Structured LogK
 I
 GC:\flutter\packages\flutter_tools\gradle\src\main\groovy\CMakeLists.txtC
 A
+<<<<<<< HEAD
+<<<<<<< HEAD
+?com.android.build.gradle.internal.cxx.io.EncodedFileFingerPrint	–—˜íï2§ ÔéìÐÐ2h
+f
+dD:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\x86_64\additional_project_files.txt	——˜íï2 ˜àÇðí2e
+c
+aD:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\x86_64\android_gradle_build.json	——˜íï2ª šàÇðí2j
+h
+fD:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\x86_64\android_gradle_build_mini.json	——˜íï2 œàÇðí2W
+U
+SD:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\x86_64\build.ninja	——˜íï2“× ÷ßÇðí2[
+Y
+WD:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\x86_64\build.ninja.txt	——˜íï2`
+^
+\D:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\x86_64\build_file_index.txt	——˜íï2G ŸàÇðí2a
+_
+]D:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\x86_64\compile_commands.json	——˜íï2	e
+c
+aD:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\x86_64\compile_commands.json.bin	——˜íï2
+k
+i
+gD:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\x86_64\metadata_generation_command.txt	——˜íï2¸ àÇðí2^
+\
+ZD:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\x86_64\prefab_config.json	——˜íï2( žàÇðí2c
+a
+_D:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\x86_64\symbol_folder_index.txt	——˜íï2V žàÇðí2
+=======
+=======
+>>>>>>> origin/weam
 ?com.android.build.gradle.internal.cxx.io.EncodedFileFingerPrint	ÿ‘˜§î2§ ÔéìÐÐ2h
 f
 dD:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\x86_64\additional_project_files.txt	ÿ‘˜§î2 ˜àÇðí2e
@@ -25,4 +54,9 @@ gD:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\x86_64\metadat
 \
 ZD:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\x86_64\prefab_config.json	ÿ‘˜§î2( žàÇðí2c
 a
+<<<<<<< HEAD
 _D:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\x86_64\symbol_folder_index.txt	ÿ‘˜§î2V žàÇðí2
+>>>>>>> origin/weam
+=======
+_D:\Development\Recoding-Platform\android\app\.cxx\Debug\f2e44h65\x86_64\symbol_folder_index.txt	ÿ‘˜§î2V žàÇðí2
+>>>>>>> origin/weam

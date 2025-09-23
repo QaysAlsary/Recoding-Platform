@@ -17,11 +17,11 @@ class RegisterTexts extends StatelessWidget {
               .labelMedium
               ?.copyWith(fontSize: 40.sp),
         ),
-        Text("Enter your credentials to continue",
-            style: Theme.of(context)
-                .textTheme
-                .labelMedium
-                ?.copyWith(fontSize: 21.sp, color: AppColors.black073)),
+        // Text("Enter your credentials to continue",
+        //     style: Theme.of(context)
+        //         .textTheme
+        //         .labelMedium
+        //         ?.copyWith(fontSize: 21.sp, color: AppColors.black073)),
       ],
     );
   }

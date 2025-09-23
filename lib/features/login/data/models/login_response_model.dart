@@ -1,13 +1,13 @@
 import 'user_model.dart';
 
 class LoginResponse {
-  final String message;
+  final String? message;
   final String? accessToken;
   final User? user;
   final Map<String, dynamic>? errors;
 
   LoginResponse({
-    required this.message,
+    this.message,
     this.accessToken,
     this.user,
     this.errors,

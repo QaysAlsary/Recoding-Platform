@@ -1,8 +1,6 @@
-
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
 
 class NetworkErrorHandler {
   static Exception handleError(dynamic error, BuildContext context) {
@@ -78,7 +76,6 @@ class NetworkErrorHandler {
       );
     } else {
       // Fallback: if no ScaffoldMessenger found, print to console
-      print('SnackBar not shown. Message: $errorMessage');
     }
   }
 

@@ -25,7 +25,8 @@ class CreatAccountButton extends StatelessWidget {
         child: Text(
           "Create a new account",
           style: Theme.of(context).textTheme.labelMedium!.copyWith(
-                fontSize: 16.sp,
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w400,
                 color: AppColors.black,
                 decoration: TextDecoration.underline,
               ),
