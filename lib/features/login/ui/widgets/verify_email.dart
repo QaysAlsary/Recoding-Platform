@@ -42,7 +42,7 @@ class _EmailVerificationScreenState extends State<VerifyEmail> {
 
   void _startResendTimer() {
     _canResend = false;
-    _resendCountdown = 10;
+    _resendCountdown = 60;
     _resendTimer = Timer.periodic(Duration(seconds: 1), (timer) {
       if (mounted) {
         setState(() {
