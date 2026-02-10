@@ -9,13 +9,12 @@ class LoginFooter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding:
-          padding ?? const EdgeInsets.only(right: 25, left: 26, bottom: 10),
+      padding: padding ?? const EdgeInsets.only(right: 25, left: 26),
       child: Image.asset(
         AppImages.login_footer,
         width: width ?? double.infinity,
         // height: height ??,
-        fit: BoxFit.fill,
+        fit: BoxFit.contain,
       ),
     );
   }

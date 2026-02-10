@@ -8,6 +8,7 @@ class MapLegendWidget extends StatelessWidget {
   final double legendWidth;
   final double legendHeight;
   final Duration animDuration;
+  final List<dynamic> markersToDisplay;
 
   const MapLegendWidget({
     Key? key,
@@ -15,6 +16,7 @@ class MapLegendWidget extends StatelessWidget {
     this.legendWidth = 240,
     this.legendHeight = 350,
     this.animDuration = const Duration(milliseconds: 350),
+     required this.markersToDisplay
   }) : super(key: key);
 
   Color _getMarkerColorByAspect(String aspect) {
@@ -80,14 +82,6 @@ class MapLegendWidget extends StatelessWidget {
         ),
         child: BlocBuilder<HomeBloc, HomeState>(
           builder: (context, state) {
-            List<dynamic> markersToDisplay = [];
-            if (state is MenuState) {
-              if (state.filteredMarkers.isNotEmpty) {
-                markersToDisplay = state.filteredMarkers;
-              } else {
-                markersToDisplay = state.allMarkers;
-              }
-            }
             final aspects = _extractUniqueAspects(markersToDisplay);
             if (aspects.isEmpty) {
               return const SizedBox.shrink();

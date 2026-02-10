@@ -215,6 +215,7 @@ class _MapTilerWidgetState extends State<MapTilerWidget>
           LatLng? currentMarkerPos;
           List<MarkerData> markersToDisplay = [];
           bool isLoadingMarkers = false;
+
           String? markersError;
           bool isFiltered = false;
 
@@ -348,43 +349,46 @@ class _MapTilerWidgetState extends State<MapTilerWidget>
               // Map Legend and Button - Hide when there are profile errors
               if (!hasProfileErrors)
                 Positioned(
-                  top: 140.h,
-                  left: 0,
-                  child: _showLegend
-                      ? SizedBox(
-                          width: 200.w,
-                          height: 350.h,
-                          child: MapLegendWidget(
-                            onClose: () => setState(() => _showLegend = false),
-                          ),
-                        )
-                      : GestureDetector(
-                          onTap: () => setState(() => _showLegend = true),
-                          child: Container(
-                            width: 48.w,
-                            height: 48.w,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: const BorderRadius.horizontal(
-                                  right: Radius.circular(24)),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.12),
-                                  blurRadius: 6,
-                                  offset: const Offset(2, 2),
+                    top: 140.h,
+                    left: 0,
+                    child: _showLegend
+                        ? SizedBox(
+                            width: 200.w,
+                            height: 350.h,
+                            child: MapLegendWidget(
+                              markersToDisplay: markersToDisplay,
+                              onClose: () =>
+                                  setState(() => _showLegend = false),
+                            ),
+                          )
+                        : markersToDisplay.isNotEmpty
+                            ? GestureDetector(
+                                onTap: () => setState(() => _showLegend = true),
+                                child: Container(
+                                  width: 48.w,
+                                  height: 48.w,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: const BorderRadius.horizontal(
+                                        right: Radius.circular(24)),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.12),
+                                        blurRadius: 6,
+                                        offset: const Offset(2, 2),
+                                      ),
+                                    ],
+                                    border: Border.all(
+                                        color: Colors.blue.shade100, width: 1),
+                                  ),
+                                  child: Icon(
+                                    Icons.menu,
+                                    color: Colors.blue.shade700,
+                                    size: 28,
+                                  ),
                                 ),
-                              ],
-                              border: Border.all(
-                                  color: Colors.blue.shade100, width: 1),
-                            ),
-                            child: Icon(
-                              Icons.menu,
-                              color: Colors.blue.shade700,
-                              size: 28,
-                            ),
-                          ),
-                        ),
-                ),
+                              )
+                            : SizedBox.shrink()),
 
               if (isLoadingMarkers)
                 Positioned(

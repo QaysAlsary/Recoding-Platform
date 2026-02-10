@@ -20,7 +20,7 @@ class TopBarWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -50,11 +50,11 @@ class TopBarWidget extends StatelessWidget {
               child: Center(
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
-                    maxWidth: 200.w,
+                    maxWidth: 500.w,
                     minWidth: 120.w,
                   ),
                   child: LoginFooter(
-                    width: 200.w,
+                    width: 500.w,
                   ),
                 ),
               ),

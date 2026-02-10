@@ -62,7 +62,7 @@ class _ChangeEmailScreenState extends State<ChangeEmailScreen> {
 
               return SingleChildScrollView(
                 child: Padding(
-                  padding: EdgeInsetsGeometry.symmetric(
+                  padding: EdgeInsets.symmetric(
                     horizontal: 24.w,
                   ),
                   child: Form(
